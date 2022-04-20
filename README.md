@@ -3,7 +3,7 @@ m1-transcode executable commandline tool
 
 ## Setup
 Install and compile other libs
- - `./setup.sh`
+ - `./scripts/setup.sh`
 
 ## Compiling
 

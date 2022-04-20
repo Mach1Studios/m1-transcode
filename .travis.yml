@@ -1,0 +1,322 @@
+language: cpp
+env:
+  global:
+
+branches:
+  only:
+    - main
+
+git:
+  lfs_skip_smudge: true
+  depth: 5
+
+before_script:
+  - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+  - eval "${MATRIX_EVAL}"
+
+stages:
+  - name: build
+
+jobs:
+  include:
+    - stage: build
+      name: m1-transcode Linux-x86_64
+      os: linux
+      sudo: required
+      dist: bionic
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - build-essential
+            - g++-7
+            - libsndfile-dev
+            - libpthread-stubs0-dev
+            - rsync
+            - awscli
+            - libboost-all-dev
+          update: true
+      git:
+        submodules: false
+      install:
+        - cd ${TRAVIS_BUILD_DIR}
+        # Install cmake on linux
+        - wget --quiet --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.20.1/cmake-3.20.1-linux-x86_64.tar.gz
+        - tar -xf cmake-3.20.1-linux-x86_64.tar.gz > /dev/null
+        - mv cmake-3.20.1-linux-x86_64 cmake-install
+        - export PATH=${TRAVIS_BUILD_DIR}/cmake-install:${TRAVIS_BUILD_DIR}/cmake-install/bin:$PATH
+      script:
+        - ./scripts/setup.sh
+        - cmake .
+        - cmake --build .
+      after_success:
+        - cd ${TRAVIS_BUILD_DIR}
+        - mkdir build
+        - mkdir -p m1-transcode-linux-x64/license/attribution
+        - cp ${TRAVIS_BUILD_DIR}/m1-transcode ${TRAVIS_BUILD_DIR}/m1-transcode-linux-x64/m1-transcode
+        - cd m1-transcode-linux-x64/license
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/LICENSE.txt
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf
+        - cd attribution
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1-EndUserLicenseAgreement-General.pdf
+        - mkdir 01_LOGOMARK_SYMBOL
+        - mkdir 02B_LOGO_POWEREDBY
+        - mkdir 02_LOGO_LOCKUPS
+        - cd 01_LOGOMARK_SYMBOL
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_WHT.eps
+        - cd ../02B_LOGO_POWEREDBY
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_WHT.eps
+        - cd ../02_LOGO_LOCKUPS
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_WHT.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_VERT_EPS_WHT.eps
+        - cd ${TRAVIS_BUILD_DIR}
+        - find m1-transcode-linux-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-linux-x64.zip -@
+        - cp m1-transcode-linux-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-linux-x64.zip
+
+    - stage: build
+      name: m1-transcode Linux-ARM64
+      os: linux
+      sudo: required
+      arch: arm64
+      dist: bionic
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - build-essential
+            - libsndfile-dev
+            - libpthread-stubs0-dev
+            - rsync
+            - awscli
+            - gcc-arm-linux-gnueabi
+            - binutils
+            - patch
+            - libssl-dev
+            - bc
+            - flex
+            - bison
+            - gawk
+            - libncurses5-dev
+            - gettext
+            - autoconf
+            - texinfo
+            - libboost-all-dev
+          update: true
+      env:
+        - CROSS_COMPILE=arm-none-eabi-
+        - CC=$(CROSS_COMPILE)gcc 
+        - CXX=$(CROSS_COMPILE)g++
+      git:
+        submodules: false
+      install:
+        - cd ${TRAVIS_BUILD_DIR}
+        # Install cmake on linux
+        - wget --quiet --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.20.1/cmake-3.20.1.tar.gz
+        - tar -xf cmake-3.20.1.tar.gz > /dev/null
+        - cd cmake-3.20.1
+        - ./bootstrap && make -s && sudo make -s install
+        - export PATH=/usr/local/bin:$PATH
+        - sudo apt remove binutils-arm-none-eabi gcc-arm-none-eabi libnewlib-arm-none-eabi
+        - cd ${TRAVIS_BUILD_DIR}
+        - wget --quiet https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
+        - tar -xf gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
+        - cd gcc-arm-none-eabi-7-2018-q2-update
+        - export PATH=${TRAVIS_BUILD_DIR}/gcc-arm-none-eabi-7-2018-q2-update/bin/:$PATH
+      script:
+        - ./scripts/setup.sh
+        - cmake .
+        - cmake --build .
+      after_success:
+        - cd ${TRAVIS_BUILD_DIR}
+        - mkdir build
+        - mkdir -p m1-transcode-linux-arm/license/attribution
+        - cp ${TRAVIS_BUILD_DIR}/m1-transcode ${TRAVIS_BUILD_DIR}/m1-transcode-linux-arm/m1-transcode
+        - cd m1-transcode-linux-arm/license
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/LICENSE.txt
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf
+        - cd attribution
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1-EndUserLicenseAgreement-General.pdf
+        - mkdir 01_LOGOMARK_SYMBOL
+        - mkdir 02B_LOGO_POWEREDBY
+        - mkdir 02_LOGO_LOCKUPS
+        - cd 01_LOGOMARK_SYMBOL
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_WHT.eps
+        - cd ../02B_LOGO_POWEREDBY
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_WHT.eps
+        - cd ../02_LOGO_LOCKUPS
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_WHT.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_VERT_EPS_WHT.eps
+        - cd ${TRAVIS_BUILD_DIR}
+        - find m1-transcode-linux-arm -path '*/.*' -prune -o -type f -print | zip m1-transcode-linux-arm.zip -@
+        - cp m1-transcode-linux-arm.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-linux-arm.zip
+
+    - stage: build
+      name: m1-transcode Windows
+      os: windows
+      language: sh
+      env:
+        - VS15=true
+      git:
+        submodules: false
+      before_install:
+        # Install polly
+        - cd ${TRAVIS_BUILD_DIR}
+        - git clone https://github.com/Mach1Studios/polly.git
+        - POLLY_SOURCE_DIR=${TRAVIS_BUILD_DIR}/polly
+        - export POLLY_SOURCE_DIR=${TRAVIS_BUILD_DIR}/polly
+        - PATH=${TRAVIS_BUILD_DIR}/polly/bin/polly:$PATH
+        - git clone https://github.com/pyenv-win/pyenv-win.git $HOME/.pyenv
+        - export PATH="$HOME/.pyenv/pyenv-win/bin:$HOME/.pyenv/pyenv-win/shims:$PATH"
+        - pyenv install -q 3.7.2
+        - pyenv rehash
+        - pyenv global 3.7.2
+        - python --version
+        - python -m pip install --upgrade pip
+        - python -m pip install requests
+      install:
+        - cd ${TRAVIS_BUILD_DIR}/source
+        - choco uninstall -y cmake.install
+        - choco install -y cmake --version=3.20.2 --installargs 'ADD_CMAKE_TO_PATH=System'
+        - choco install -y make
+        - choco install -y awscli
+        - choco install -y boost-msvc-14.1
+        - choco install -y pkgconfiglite
+        - export PATH="$(powershell -Command '("Process", "Machine" | % {[Environment]::GetEnvironmentVariable("PATH", $_) -Split ";" -Replace "\\$", ""} | Select -Unique | % { cygpath $_ }) -Join ":"')"
+      script:
+        - cd ${TRAVIS_BUILD_DIR}
+        - mkdir libs && cd libs
+        - git clone git@github.com:ebu/libadm.git
+        - cd libadm && mkdir build && cd build
+        - cmake ..
+        - cmake --build . --target install
+        - cd ${TRAVIS_BUILD_DIR}/libs
+        - git clone git@github.com:irt-open-source/libbw64.git
+        - cd libbw64 && mkdir build && cd build
+        - cmake ..
+        - cmake --build . --target install
+        - aws s3 sync s3://${AWS_DEPLOY_BUCKET}/deps/libsndfile ./libs/libsndfile
+        - cd ${TRAVIS_BUILD_DIR}
+        - ${POLLY_SOURCE_DIR}/bin/polly.py --clear --install --config Release --toolchain vs-15-2017
+        - ${POLLY_SOURCE_DIR}/bin/polly.py --clear --install --config Release --toolchain vs-15-2017-win64
+      after_success:
+        - cd ${TRAVIS_BUILD_DIR}
+        - mkdir build
+        # zip up win-x64
+        - mkdir -p m1-transcode-win-x64/license/attribution
+        - cp ${TRAVIS_BUILD_DIR}/_install\vs-15-2017-win64\bin\m1-transcode.exe ${TRAVIS_BUILD_DIR}/m1-transcode-win-x64/m1-transcode.exe
+        - cd m1-transcode-win-x64/license
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/LICENSE.txt
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf
+        - cd attribution
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1-EndUserLicenseAgreement-General.pdf
+        - mkdir 01_LOGOMARK_SYMBOL
+        - mkdir 02B_LOGO_POWEREDBY
+        - mkdir 02_LOGO_LOCKUPS
+        - cd 01_LOGOMARK_SYMBOL
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_WHT.eps
+        - cd ../02B_LOGO_POWEREDBY
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_WHT.eps
+        - cd ../02_LOGO_LOCKUPS
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_WHT.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_VERT_EPS_WHT.eps
+        - cd ${TRAVIS_BUILD_DIR}
+        - find m1-transcode-win-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-win-x64.zip -@
+        - cp m1-transcode-win-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-win-x64.zip
+        # zip up win-x86
+        - cd ${TRAVIS_BUILD_DIR}
+        - mkdir -p m1-transcode-win-x86/license/attribution
+        - cp ${TRAVIS_BUILD_DIR}/_install\vs-15-2017\bin\m1-transcode.exe ${TRAVIS_BUILD_DIR}/m1-transcode-win-x86/m1-transcode.exe
+        - cd m1-transcode-win-x86/license
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/LICENSE.txt
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf
+        - cd attribution
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1-EndUserLicenseAgreement-General.pdf
+        - mkdir 01_LOGOMARK_SYMBOL
+        - mkdir 02B_LOGO_POWEREDBY
+        - mkdir 02_LOGO_LOCKUPS
+        - cd 01_LOGOMARK_SYMBOL
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_WHT.eps
+        - cd ../02B_LOGO_POWEREDBY
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_WHT.eps
+        - cd ../02_LOGO_LOCKUPS
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_WHT.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_VERT_EPS_WHT.eps
+        - cd ${TRAVIS_BUILD_DIR}
+        - find m1-transcode-win-x86 -path '*/.*' -prune -o -type f -print | zip m1-transcode-win-x86.zip -@
+        - cp m1-transcode-win-x86.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-win-x86.zip
+
+    - stage: build
+      name: m1-transcode macOS
+      os: osx
+      addons:
+        homebrew:
+          packages:
+            - libsndfile
+            - cmake
+            - gcc
+            - libpthread-stubs
+            - git-lfs
+            - rsync
+            - awscli
+      osx_image: xcode13.2
+      git:
+        submodules: false
+      install:
+        - brew tap irt-open-source/homebrew-nga
+        - brew install libadm libbw64
+      script:
+        - ./scripts/setup.sh
+        - cmake .
+        - cmake --build .
+      after_success:
+        - cd ${TRAVIS_BUILD_DIR}
+        - mkdir build
+        - mkdir -p m1-transcode-osx-x64/license/attribution
+        - cp ${TRAVIS_BUILD_DIR}/m1-transcode ${TRAVIS_BUILD_DIR}/m1-transcode-osx-x64/m1-transcode
+        - cd m1-transcode-osx-x64/license
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/LICENSE.txt
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf
+        - cd attribution
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1-EndUserLicenseAgreement-General.pdf
+        - mkdir 01_LOGOMARK_SYMBOL
+        - mkdir 02B_LOGO_POWEREDBY
+        - mkdir 02_LOGO_LOCKUPS
+        - cd 01_LOGOMARK_SYMBOL
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_WHT.eps
+        - cd ../02B_LOGO_POWEREDBY
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_WHT.eps
+        - cd ../02_LOGO_LOCKUPS
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_BLK.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_WHT.eps
+        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_VERT_EPS_WHT.eps
+        - cd ${TRAVIS_BUILD_DIR}
+        - find m1-transcode-osx-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-osx-x64.zip -@
+        - cp m1-transcode-osx-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-osx-x64.zip
+
+before_deploy: 
+  - cd ${TRAVIS_BUILD_DIR}
+
+deploy:
+  provider: releases
+  api_key: "GITHUB OAUTH TOKEN"
+  file_glob: true
+  file: build/*
+  skip_cleanup: true
+  on:
+    tags: true
