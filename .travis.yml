@@ -194,6 +194,7 @@ jobs:
       script:
         - cd ${TRAVIS_BUILD_DIR}
         - mkdir libs && cd libs
+        - git clone git@github.com:Mach1Studios/m1-sdk.git
         - git clone git@github.com:ebu/libadm.git
         - cd libadm && mkdir build && cd build
         - cmake ..

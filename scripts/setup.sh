@@ -2,7 +2,9 @@
 
 mkdir libs && cd libs
 
-git clone git@github.com:ebu/libadm.git
+git clone git@github.com:Mach1Studios/m1-sdk.git
+
+cd ../ && git clone git@github.com:ebu/libadm.git
 cd libadm
 mkdir build && cd build
 cmake ..
