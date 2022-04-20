@@ -6,6 +6,8 @@ env:
 branches:
   only:
     - main
+      on:
+        tags: true
 
 git:
   lfs_skip_smudge: true
