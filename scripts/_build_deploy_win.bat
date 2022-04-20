@@ -7,6 +7,7 @@ REM TODO:
 REM - empty!
 REM
 REM USAGE:
+REM - Requires M1-SDK repo
 REM - Setup your local vars: 
 REM   + M1SDK_PATH=
 REM   + M1TT_PATH=

@@ -6,6 +6,7 @@
 # im empty!
 # 
 # USAGE:
+# - Requires M1-SDK repo
 # - Setup your local vars: 
 #   + M1SDK_PATH=
 #   + M1TT_PATH=
