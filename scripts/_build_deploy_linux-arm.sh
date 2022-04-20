@@ -6,7 +6,9 @@
 # im empty!
 # 
 # USAGE:
-# - Change the absolute paths and run
+# - Setup your local vars: 
+#   + M1SDK_PATH=
+#   + M1TT_PATH=
 #
 
 M1TT_PATH=~/git/m1-transcodertools/m1-transcode
@@ -16,14 +18,14 @@ M1SDK_PATH=~/git/m1-sdk
 ~/git/polly/bin/polly --clear --install --config Release --toolchain gcc
 
 cd $M1TT_PATH
-rm -rf "m1-transcode-linux-x64"
-rm "m1-transcode-linux-x64.zip"
-mkdir -p "m1-transcode-linux-x64"
-cd "m1-transcode-linux-x64"
+rm -rf "m1-transcode-linux-arm"
+rm "m1-transcode-linux-arm.zip"
+mkdir -p "m1-transcode-linux-arm"
+cd "m1-transcode-linux-arm"
 mkdir -p license
 
-cp -f ../_install/gcc/bin/m1-transcode $M1SDK_PATH/executables/linux/amazon-lambda-ami/m1-transcode
-cp -f $M1SDK_PATH/license/LICENSE.txt $M1SDK_PATH/executables/linux/amazon-lambda-ami/LICENSE.txt
+cp -f ../_install/gcc/bin/m1-transcode $M1SDK_PATH/executables/linux-arm/m1-transcode
+cp -f $M1SDK_PATH/license/LICENSE.txt $M1SDK_PATH/executables/linux-arm/LICENSE.txt
 
 cp -f ../_install/gcc/bin/m1-transcode ./m1-transcode
 cp -f $M1SDK_PATH/license/LICENSE.txt license/LICENSE.txt
@@ -33,9 +35,9 @@ cd license/attribution
 rm -f *.docx
 
 cd ../../../
-find m1-transcode-linux-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-linux-x64.zip -@
+find m1-transcode-linux-arm -path '*/.*' -prune -o -type f -print | zip m1-transcode-linux-arm.zip -@
 
 echo "### DEPLOYING TO S3 ###"
 # version="USER INPUT"
 read -p "Version: " version
-aws s3 cp "m1-transcode-linux-x64.zip" "s3://mach1-releases/$version/transcode/m1-transcode-linux-x64.zip" --profile mach1 --content-disposition "m1-transcode-linux-x64.zip"
+aws s3 cp "m1-transcode-linux-arm.zip" "s3://mach1-releases/$version/transcode/m1-transcode-linux-arm.zip" --profile mach1 --content-disposition "m1-transcode-linux-arm.zip"

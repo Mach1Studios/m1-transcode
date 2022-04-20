@@ -6,11 +6,10 @@
 # im empty!
 # 
 # USAGE:
-# - Change the absolute paths and run
+# - Setup your local vars: 
+#   + M1SDK_PATH=
+#   + M1TT_PATH=
 #
-
-M1TT_PATH=/Volumes/git/m1-transcodertools/m1-transcode
-M1SDK_PATH=/Volumes/git/m1-sdk
 
 # build for macos
 /Volumes/git/polly/bin/polly --clear --install --config Release --toolchain xcode

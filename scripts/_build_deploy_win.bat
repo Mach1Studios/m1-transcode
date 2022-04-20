@@ -7,10 +7,10 @@ REM TODO:
 REM - empty!
 REM
 REM USAGE:
-REM - Change the absolute paths and run
-
-set M1TT_PATH=D:\git\m1-transcodertools\m1-transcode\
-set M1SDK_PATH=D:\git\m1-sdk\
+REM - Setup your local vars: 
+REM   + M1SDK_PATH=
+REM   + M1TT_PATH=
+REM
 
 python ../../polly/bin/polly.py --clear --install --config Release --toolchain vs-15-2017
 python ../../polly/bin/polly.py --clear --install --config Release --toolchain vs-15-2017-win64
