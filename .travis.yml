@@ -5,9 +5,7 @@ env:
 
 branches:
   only:
-    - main
-      on:
-        tags: true
+    - main AND tag IS present
 
 git:
   lfs_skip_smudge: true
