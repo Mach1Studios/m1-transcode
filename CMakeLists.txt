@@ -5,6 +5,15 @@ set(CMAKE_CXX_STANDARD 11)
 if (NOT "$ENV{M1SDK_PATH}" STREQUAL "")
     set(MACH1SPATIAL_SDK_PATH "$ENV{M1SDK_PATH}" CACHE INTERNAL "Copied from environment variable")
     message("M1SDK_PATH is set: ${MACH1SPATIAL_SDK_PATH}")
+    if(WIN32)
+        set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/windows-x86)
+    elseif(APPLE)
+        set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/xcode)
+    elseif(UNIX AND NOT APPLE)
+        set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/linux)
+    else()
+        set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/linux)
+    endif()
 else()
   message(FATAL_ERROR "unexpected: the local M1SDK_PATH environment variable is not set or is empty!")
 endif()
@@ -47,19 +56,11 @@ add_subdirectory(libs/libbw64)
 set(SOURCES 
   src/main.cpp
   src/ADMParse.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/Mach1TranscodeCore.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/Mach1TranscodeCAPI.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/include/cpp/Mach1Transcode.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/Mach1Point3DCore.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/Mach1GenerateCoeffs.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/Mach1AudioTimelineCore.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/Mach1AudioTimelineCAPI.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/include/cpp/Mach1AudioTimeline.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/deps/xml/pugixml.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/deps/yaml/Yaml.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/deps/M1DSP/M1DSPFilters.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/deps/M1DSP/M1DSPDynamics.cpp
-  ${MACH1SPATIAL_SDK_PATH}/source/deps/M1DSP/M1DSPUtilities.cpp
+  ${MACH1SPATIAL_LIBS_PATH}/include/Mach1Transcode.cpp
+  ${MACH1SPATIAL_LIBS_PATH}/include/Mach1AudioTimeline.cpp
+  ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPFilters.cpp
+  ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPDynamics.cpp
+  ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPUtilities.cpp
   )
 
 # create the executable
@@ -74,7 +75,7 @@ else()
 	set(LIBSNDFILE_INCLUDE_DIR ./libs/libsndfile/include)
     target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${LIBSNDFILE_INCLUDE_DIR})
 	set(LIBSNDFILE_INCLUDE_DIRS ${LIBSNDFILE_INCLUDE_DIR})
-	if(MSVC)
+	if(WIN32)
         target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/vs/\$(Platform)")
 		set(LIBSNDFILE_LIBRARY "sndfile.lib")
 	elseif(APPLE)
@@ -89,11 +90,18 @@ else()
 	set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIBRARY})
 endif(LIBSNDFILE_FOUND)
 
+# link libraries
+find_library(MACH1TRANSCODE_LIBRARY 
+             NAMES Mach1TranscodeCAPI libMach1TranscodeCAPI libMach1TranscodeCAPI.a libMach1TranscodeCAPI.so Mach1TranscodeCAPI.lib
+             PATHS ${MACH1SPATIAL_LIBS_PATH}/lib ${MACH1SPATIAL_LIBS_PATH}/windows-x86 ${MACH1SPATIAL_LIBS_PATH}/windows-x86_64
+)
+
 # include headers
-set(MACH1SPATIAL_INCLUDES src libs ${MACH1SPATIAL_SDK_PATH}/source/include/cpp ${MACH1SPATIAL_SDK_PATH}/source/deps ${MACH1SPATIAL_SDK_PATH}/public)
+set(MACH1SPATIAL_INCLUDES src libs ${MACH1SPATIAL_LIBS_PATH}/include ${MACH1SPATIAL_SDK_PATH}/public)
 include_directories(${MACH1SPATIAL_INCLUDES})
 include_directories(${LIBSNDFILE_INCLUDE_DIRS})
 
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${MACH1TRANSCODE_LIBRARY})
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LIBSNDFILE_LIBRARIES})
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE adm)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE bw64)

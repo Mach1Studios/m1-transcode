@@ -9,7 +9,7 @@ git:
   lfs_skip_smudge: true
   depth: 5
 
-before_script:
+before_install:
   - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - eval "${MATRIX_EVAL}"
 
@@ -181,7 +181,7 @@ jobs:
         - python -m pip install --upgrade pip
         - python -m pip install requests
       install:
-        - cd ${TRAVIS_BUILD_DIR}/source
+        - cd ${TRAVIS_BUILD_DIR}
         - choco uninstall -y cmake.install
         - choco install -y cmake --version=3.20.2 --installargs 'ADD_CMAKE_TO_PATH=System'
         - choco install -y make
