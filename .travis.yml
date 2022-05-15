@@ -127,6 +127,7 @@ jobs:
         - cd gcc-arm-none-eabi-7-2018-q2-update
         - export PATH=${TRAVIS_BUILD_DIR}/gcc-arm-none-eabi-7-2018-q2-update/bin/:$PATH
       script:
+        - cd ${TRAVIS_BUILD_DIR}
         - ./scripts/setup.sh
         - cmake .
         - cmake --build .

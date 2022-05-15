@@ -33,7 +33,7 @@
 #include "yaml/Yaml.hpp"
 #include "xml/pugixml.hpp"
 #include "bw64/bw64.hpp"
-#include "chunks.h"
+#include "adm_metadata.h"
 
 std::vector<Mach1AudioObject> audioObjects;
 std::vector<Mach1Point3D> keypoints;
@@ -52,7 +52,6 @@ Mach1Point3D* callbackPointsSampler(long long sample, int& n) {
             }
         }
     }
-
     n = keypoints.size();
     return keypoints.data();
 }
@@ -96,6 +95,7 @@ void printHelp() {
 	cout << "  -lfe-sub <#>          - indicates channel(s) to be filtered and treated as LFE/SUB, delimited by ',' for multiple channels" << std::endl;
 	cout << "  -spatial-downmix <#>  - compare top vs. bottom of the input soundfield, if difference is less than the set threshold (float) output format will be Mach1 Horizon" << std::endl;
 	cout << "  -extract-metadata     - export any detected XML metadata into separate text file" << std::endl;
+	cout << "  -write-metadata       - write channel-bed ADM metadata for supported formats" << std::endl;
 	cout << std::endl;
 	cout << "  Formats Supported:" << std::endl;
     cout << "    M1Horizon (Mach1 Horizon / Quad) - L R Ls Rs" << std::endl;
@@ -117,21 +117,21 @@ void printHelp() {
 	cout << "    5.1_M (DTS)                        - L R Ls Rs C LFE" << std::endl;
     cout << "    5.0.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
     cout << "    5.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
-    cout << "    5.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
     cout << "    5.0.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
+    cout << "    5.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
 	cout << "    6.0_M                              - L C R Ls Rs Cs" << std::endl;
     cout << "    7.0_C (Pro Tools default)          - L C R Lss Rss Lsr Rsr, forward focus" << std::endl;
+    cout << "    7.0_C (SMPTE)                      - L Lc C Rc R Ls Rs" << std::endl;
 	cout << "    7.1_M (Pro Tools default)          - L C R Lss Rss Lsr Rsr LFE" << std::endl;
 	cout << "    7.1_C (Pro Tools default)          - L C R Lss Rss Lsr Rsr LFE, forward focus" << std::endl;
-    cout << "    7.0_C (SMPTE)                      - L Lc C Rc R Ls Rs" << std::endl;
 	cout << "    7.1_C (SMPTE)                      - L Lc C Rc R Ls Rs LFE" << std::endl;
-	cout << "    7.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE Lts Rts" << std::endl;
 	cout << "    7.0.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr Lts Rts" << std::endl;
-	cout << "    7.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE FLts FRts BLts BRts" << std::endl;
-	cout << "    7.0.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
     cout << "    7.0.2_M (SMPTE)                    - L R C Lss Rss Lsr Rsr Lts Rts" << std::endl;
+	cout << "    7.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE Lts Rts" << std::endl;
+    cout << "    7.1.2_C (Film / Pro Tools default) - L R C LFE Lss Rss Lsr Rsr Lts Rts [ADM Metadata Supported]" << std::endl;
 	cout << "    7.1.2_M (SMPTE)                    - L R C LFE Lss Rss Lsr Rsr Lts Rts" << std::endl;
-    cout << "    7.1.2_C (Dolby Atmos channelbed)   - L R C LFE Lss Rss Lsr Rsr Lts Rts [ADM Metadata]" << std::endl;
+	cout << "    7.0.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
+	cout << "    7.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE FLts FRts BLts BRts" << std::endl;
     cout << "    16.0_M                             - 16 channel Surround 3D layout" << std::endl;
 	cout << "    ACNSN3D                            - 1st order B-format, ACN order and SN3D weighting" << std::endl;
 	cout << "    FuMa                               - 1st order B-format, Furse-Malham order and weighting" << std::endl;
@@ -148,7 +148,6 @@ void printHelp() {
     cout << "    ACNSN3DmaxRE6oa                    - 6th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
     cout << "    ACNSN3DmaxRE7oa                    - 7th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
 	cout << std::endl;
-
 }
 
 struct audiofileInfo {
@@ -176,13 +175,13 @@ audiofileInfo printFileInfo(SndfileHandle file) {
     return inputFileInfo;
 }
 
-std::string getTimecode(const char* admString, float duration) {
+std::string prepareAdmMetadata(const char* admString, float duration, int sampleRate, int format) {
     // Used to find duration in time of input file
     // to correctly edit the ADM metadata and add the appropriate
     // `end` and `duration` times.
     std::string s(admString);
-    std::string searchString("hh:mm:ss.fffff");
-    size_t pos = s.find(searchString);
+    std::string searchDurationString("hh:mm:ss.fffff");
+    size_t pos = s.find(searchDurationString);
     
     int seconds, minutes, hours;
     std::string hoursString, minutesString, secondsString;
@@ -205,16 +204,50 @@ std::string getTimecode(const char* admString, float duration) {
         // Add position to the vector
         positions.push_back(pos);
         // Get the next occurrence from the current position
-        pos = s.find(searchString, pos + searchString.size());
+        pos = s.find(searchDurationString, pos + searchDurationString.size());
     }
 
     for (size_t pos : positions){
-        s.replace(pos, searchString.length(), hoursString+":"+minutesString+":"+secondsString+".00000");
+        s.replace(pos, searchDurationString.length(), hoursString+":"+minutesString+":"+secondsString+".00000");
     }
 
     cout << "Detected Duration:  " << duration << std::endl;
     cout << "Duration Timecode:  " << hoursString << ":" << minutesString << ":" << secondsString << ".00000" << std::endl;
     
+    // set metadata for samplerate
+    std::string searchSampleRateString("__SAMPLERATE__");
+    size_t srPos = s.find(searchSampleRateString);
+    std::vector<size_t> srPositions;
+    // Repeat till end is reached
+    while(srPos != std::string::npos){
+        // Add position to the vector
+        srPositions.push_back(srPos);
+        // Get the next occurrence from the current position
+        srPos = s.find(searchSampleRateString, srPos + searchSampleRateString.size());
+    }
+
+    for (size_t srPos : srPositions){
+        s.replace(srPos, searchDurationString.length(), std::to_string(sampleRate));
+    }
+    cout << "Detected SampleRate:  " << std::to_string(sampleRate) << std::endl;
+    
+    // set metadata for bitdepth
+    std::string searchBitDepthString("__BITDEPTH__");
+    size_t bdPos = s.find(searchBitDepthString);
+    std::vector<size_t> bdPositions;
+    // Repeat till end is reached
+    while(bdPos != std::string::npos){
+        // Add position to the vector
+        bdPositions.push_back(pos);
+        // Get the next occurrence from the current position
+        bdPos = s.find(searchBitDepthString, bdPos + searchBitDepthString.size());
+    }
+
+    for (size_t bdPos : bdPositions){
+        s.replace(bdPos, searchBitDepthString.length(), std::to_string(format));
+    }
+    cout << "Detected BitDepth:  " << std::to_string(format) << std::endl;
+
     return s;
 }
 
@@ -238,9 +271,9 @@ public:
         type = SNDFILETYPE_SND;
     }
 
-    void open(std::string outfilestr, int channels, bw64::ChnaChunk chnaChunkAdm, bw64::AxmlChunk axmlChunkAdm) {
+    void open(std::string outfilestr, int sampleRate, int channels, int format, bw64::ChnaChunk chnaChunkAdm, bw64::AxmlChunk axmlChunkAdm) {
         // TODO: make variable of samplerate and bitdepth based on input
-        outBw64 = bw64::writeFile(outfilestr, channels, 48000u, 24u, std::make_shared<bw64::ChnaChunk>(chnaChunkAdm), std::make_shared<bw64::AxmlChunk>(axmlChunkAdm));
+        outBw64 = bw64::writeFile(outfilestr, channels, sampleRate, format, std::make_shared<bw64::ChnaChunk>(chnaChunkAdm), std::make_shared<bw64::AxmlChunk>(axmlChunkAdm));
         this->channels = channels;
         type = SNDFILETYPE_BW64;
     }
@@ -324,6 +357,7 @@ int main(int argc, char* argv[]) {
 	std::vector<int> subChannelIndices;
 	bool processSubs = false;
 	bool extractMetadata = false;
+    bool writeMetadata = false;
 	ADMParse admParse; // Reading ADM data
 
 	sf_count_t totalSamples;
@@ -388,6 +422,12 @@ int main(int argc, char* argv[]) {
 	{
 		extractMetadata = true;
 	}
+    // flag for writing ADM metadata to audiofile if supported
+    pStr = getCmdOption(argv, argv + argc, "-write-metadata");
+    if (pStr != NULL)
+    {
+        writeMetadata = true;
+    }
 	/*
 	 flag for auto Mach1 Spatial downmixer
 	 compares top/bottom to downmix to Horizon
@@ -434,7 +474,7 @@ int main(int argc, char* argv[]) {
                 cerr << "Please specify an input meta file" << std::endl;
                 return -1;
             }
-        } else if (strcmp(inFmtStr, "TTPoints") == 0) {
+        } else if (strcmp(inFmtStr, "CustomPoints") == 0) {
 			pStr = getCmdOption(argv, argv + argc, "-in-json");
 			if (pStr && (strlen(pStr) > 0))
             {
@@ -490,7 +530,7 @@ int main(int argc, char* argv[]) {
 	if (pStr && (strlen(pStr) > 0))
 	{
 		outFmtStr = pStr;
-		if (strcmp(outFmtStr, "TTPoints") == 0) {
+		if (strcmp(outFmtStr, "CustomPoints") == 0) {
 			pStr = getCmdOption(argv, argv + argc, "-out-json");
 			if (pStr && (strlen(pStr) > 0))
 			{
@@ -701,10 +741,83 @@ int main(int argc, char* argv[]) {
 					strcpy(outfilestr, outfilename);
 				}
 
-				if (outFmt == m1transcode.getFormatFromString("DolbyAtmosSevenOneTwo")) {
-					std::string axmlChunkAdmCorrectedString = getTimecode(axmlChunkAdmString, inputInfo.duration).c_str();
-					bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
-					outfiles[i].open(outfilestr, actualOutFileChannels, chnaChunkAdm, axmlChunkAdmCorrected);
+				if (writeMetadata) {
+                    // Setup empty metadata chunks
+                    bw64::ChnaChunk chnaChunkAdm;
+                    std::string axmlChunkAdmCorrectedString;
+                    
+                    if (outFmt == m1transcode.getFormatFromString("7.1.2_M")){
+                        // setup `chna` metadata chunk
+                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
+                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                            std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
+                            return;
+                        }
+                        // setup `axml` metadata chunk
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_2_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
+                        bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                    }
+                    else if (outFmt == m1transcode.getFormatFromString("7.1.2_C")){
+                        // setup `chna` metadata chunk
+                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
+                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                            std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
+                            return;
+                        }
+                        // setup `axml` metadata chunk
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_2_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
+                        bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                    }
+                    else if (outFmt == m1transcode.getFormatFromString("5.1.4_M")){
+                        // setup `chna` metadata chunk
+                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
+                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                            std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
+                            return;
+                        }
+                        // setup `axml` metadata chunk
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_5_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
+                        bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                    }
+                    else if (outFmt == m1transcode.getFormatFromString("5.1.4_C")){
+                        // setup `chna` metadata chunk
+                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
+                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                            std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
+                            return;
+                        }
+                        // setup `axml` metadata chunk
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_5_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
+                        bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                    }
+                    else if (outFmt == m1transcode.getFormatFromString("7.1.4_M")){
+                        // setup `chna` metadata chunk
+                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
+                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                            std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
+                            return;
+                        }
+                        // setup `axml` metadata chunk
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
+                        bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                    }
+                    else if (outFmt == m1transcode.getFormatFromString("7.1.4_C")){
+                        // setup `chna` metadata chunk
+                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
+                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                            std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
+                            return;
+                        }
+                        // setup `axml` metadata chunk
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
+                        bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                    }
 				}
 				else {
 					outfiles[i].open(outfilestr, (int)sampleRate, actualOutFileChannels, format);
