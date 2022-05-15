@@ -118,7 +118,8 @@ void printHelp() {
     cout << "    5.0.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
     cout << "    5.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
     cout << "    5.0.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
-    cout << "    5.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
+    cout << "    5.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
+    cout << "    5.1.4_C (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
 	cout << "    6.0_M                              - L C R Ls Rs Cs" << std::endl;
     cout << "    7.0_C (Pro Tools default)          - L C R Lss Rss Lsr Rsr, forward focus" << std::endl;
     cout << "    7.0_C (SMPTE)                      - L Lc C Rc R Ls Rs" << std::endl;
@@ -127,11 +128,12 @@ void printHelp() {
 	cout << "    7.1_C (SMPTE)                      - L Lc C Rc R Ls Rs LFE" << std::endl;
 	cout << "    7.0.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr Lts Rts" << std::endl;
     cout << "    7.0.2_M (SMPTE)                    - L R C Lss Rss Lsr Rsr Lts Rts" << std::endl;
-	cout << "    7.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE Lts Rts" << std::endl;
+	cout << "    7.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE Lts Rts [ADM Metadata Supported]" << std::endl;
     cout << "    7.1.2_C (Film / Pro Tools default) - L R C LFE Lss Rss Lsr Rsr Lts Rts [ADM Metadata Supported]" << std::endl;
 	cout << "    7.1.2_M (SMPTE)                    - L R C LFE Lss Rss Lsr Rsr Lts Rts" << std::endl;
 	cout << "    7.0.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
-	cout << "    7.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE FLts FRts BLts BRts" << std::endl;
+	cout << "    7.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
+    cout << "    7.1.4_C (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
     cout << "    16.0_M                             - 16 channel Surround 3D layout" << std::endl;
 	cout << "    ACNSN3D                            - 1st order B-format, ACN order and SN3D weighting" << std::endl;
 	cout << "    FuMa                               - 1st order B-format, Furse-Malham order and weighting" << std::endl;
