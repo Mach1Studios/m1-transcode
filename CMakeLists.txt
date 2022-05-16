@@ -91,9 +91,9 @@ else()
 endif(LIBSNDFILE_FOUND)
 
 # link libraries
-find_library(MACH1TRANSCODE_LIBRARY 
+find_library(MACH1TRANSCODE_LIBRARY
              NAMES Mach1TranscodeCAPI libMach1TranscodeCAPI libMach1TranscodeCAPI.a libMach1TranscodeCAPI.so Mach1TranscodeCAPI.lib
-             PATHS ${MACH1SPATIAL_LIBS_PATH}/lib ${MACH1SPATIAL_LIBS_PATH}/windows-x86 ${MACH1SPATIAL_LIBS_PATH}/windows-x86_64
+             PATHS ${MACH1SPATIAL_LIBS_PATH}/lib ${MACH1SPATIAL_LIBS_PATH}/ ${MACH1SPATIAL_LIBS_PATH}/windows-x86_64
 )
 
 # include headers

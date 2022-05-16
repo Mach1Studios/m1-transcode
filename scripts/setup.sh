@@ -9,11 +9,11 @@ cd libadm
 mkdir build && cd build
 cmake ..
 make
-sudo make install
+make install
 
 cd ../../ && git clone --depth 1 git@github.com:irt-open-source/libbw64.git
 cd libbw64
 mkdir build && cd build
 cmake ..
 make
-sudo make install
+make install
