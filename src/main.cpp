@@ -753,7 +753,7 @@ int main(int argc, char* argv[]) {
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
                         if ((int)chnaChunkAdm.size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
-                            return;
+							break;
                         }
                         // setup `axml` metadata chunk
                         axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_2_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
@@ -765,7 +765,7 @@ int main(int argc, char* argv[]) {
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
                         if ((int)chnaChunkAdm.size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
-                            return;
+                            break;
                         }
                         // setup `axml` metadata chunk
                         axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_2_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
@@ -777,7 +777,7 @@ int main(int argc, char* argv[]) {
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
                         if ((int)chnaChunkAdm.size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
-                            return;
+                            break;
                         }
                         // setup `axml` metadata chunk
                         axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_5_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
@@ -789,7 +789,7 @@ int main(int argc, char* argv[]) {
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
                         if ((int)chnaChunkAdm.size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
-                            return;
+                            break;
                         }
                         // setup `axml` metadata chunk
                         axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_5_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
@@ -801,7 +801,7 @@ int main(int argc, char* argv[]) {
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
                         if ((int)chnaChunkAdm.size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
-                            return;
+                            break;
                         }
                         // setup `axml` metadata chunk
                         axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
@@ -813,7 +813,7 @@ int main(int argc, char* argv[]) {
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
                         if ((int)chnaChunkAdm.size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
-                            return;
+                            break;
                         }
                         // setup `axml` metadata chunk
                         axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
