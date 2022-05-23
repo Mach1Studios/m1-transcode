@@ -1,6 +1,4 @@
-REM
 @echo off
-
 setlocal EnableDelayedExpansion
 
 REM TODO:
@@ -11,9 +9,7 @@ REM - Requires M1-SDK repo
 REM - Setup your local vars:
 REM   + M1SDK_PATH=
 REM   + M1TT_PATH=
-REM
 
-CD ../
 python ../../polly/bin/polly.py --clear --install --config Release --toolchain vs-15-2017
 python ../../polly/bin/polly.py --clear --install --config Release --toolchain vs-15-2017-win64
 
@@ -27,12 +23,12 @@ MKDIR "m1-transcode-win-x86"
 MKDIR "m1-transcode-win-x64\license"
 MKDIR "m1-transcode-win-x86\license"
 
-COPY /Y _install\vs-15-2017\bin\m1-transcode.exe %M1SDK_PATH%\executables\windows-x86\m1-transcode.exe
+COPY /Y _install\vs-15-2017\build\m1-transcode.exe %M1SDK_PATH%\executables\windows-x86\m1-transcode.exe
 COPY /Y %M1SDK_PATH%\license\LICENSE.txt %M1SDK_PATH%\executables\windows-x86\LICENSE.txt
-COPY /Y _install\vs-15-2017-win64\bin\m1-transcode.exe %M1SDK_PATH%\executables\windows-x86_64\m1-transcode.exe
+COPY /Y _install\vs-15-2017-win64\build\m1-transcode.exe %M1SDK_PATH%\executables\windows-x86_64\m1-transcode.exe
 COPY /Y %M1SDK_PATH%\license\LICENSE.txt %M1SDK_PATH%\executables\windows-x86_64\LICENSE.txt
 
-COPY /Y _install\vs-15-2017\bin\m1-transcode.exe m1-transcode-win-x86\m1-transcode.exe
+COPY /Y _install\vs-15-2017\build\m1-transcode.exe m1-transcode-win-x86\m1-transcode.exe
 COPY /Y %M1SDK_PATH%\license\LICENSE.txt %M1TT_PATH%\m1-transcode-win-x86\license\LICENSE.txt
 COPY /Y %M1SDK_PATH%\license\Mach1SpatialSDK-RoyaltyFreeLicense.pdf %M1TT_PATH%\m1-transcode-win-x86\license\Mach1SpatialSDK-RoyaltyFreeLicense.pdf
 xcopy /S /Y %M1SDK_PATH%\license\attribution %M1TT_PATH%\m1-transcode-win-x86\license\attribution
@@ -40,7 +36,7 @@ cd %M1TT_PATH%\m1-transcode-win-x86\license\attribution
 DEL /Q /F /S "*.docx"
 
 cd %M1TT_PATH%
-COPY /Y _install\vs-15-2017-win64\bin\m1-transcode.exe m1-transcode-win-x64\m1-transcode.exe
+COPY /Y _install\vs-15-2017-win64\build\m1-transcode.exe m1-transcode-win-x64\m1-transcode.exe
 COPY /Y %M1SDK_PATH%\license\LICENSE.txt %M1TT_PATH%\m1-transcode-win-x64\license\LICENSE.txt
 COPY /Y %M1SDK_PATH%\license\Mach1SpatialSDK-RoyaltyFreeLicense.pdf %M1TT_PATH%\m1-transcode-win-x64\license\Mach1SpatialSDK-RoyaltyFreeLicense.pdf
 xcopy /S /Y %M1SDK_PATH%\license\attribution %M1TT_PATH%\m1-transcode-win-x64\license\attribution
