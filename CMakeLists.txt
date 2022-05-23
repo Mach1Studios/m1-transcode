@@ -76,7 +76,6 @@ set(SOURCES
   ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPDynamics.cpp
   ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPUtilities.cpp
   )
-message("Sources set: ${MACH1SPATIAL_LIBS_PATH}/include/")
 
 # create the executable
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
@@ -107,6 +106,7 @@ endif(LIBSNDFILE_FOUND)
 
 # link libraries
 if(WIN32 OR MSVC)
+  add_definitions(-DM1_STATIC)
   # Change `PATH` to reflect `/MT` or `/MD` as needed!
   set(MACH1TRANSCODE_LIBRARY_DEBUG ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Debug/Mach1TranscodeCAPId.lib)
   set(MACH1TRANSCODE_LIBRARY_RELEASE ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Release/Mach1TranscodeCAPI.lib)
