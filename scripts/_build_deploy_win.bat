@@ -8,11 +8,12 @@ REM - empty!
 REM
 REM USAGE:
 REM - Requires M1-SDK repo
-REM - Setup your local vars: 
+REM - Setup your local vars:
 REM   + M1SDK_PATH=
 REM   + M1TT_PATH=
 REM
 
+CD ../
 python ../../polly/bin/polly.py --clear --install --config Release --toolchain vs-15-2017
 python ../../polly/bin/polly.py --clear --install --config Release --toolchain vs-15-2017-win64
 
