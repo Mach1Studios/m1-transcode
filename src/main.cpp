@@ -80,7 +80,9 @@ void printHelp() {
 	cout << "m1-transcode -- command line mach1 format conversion tool" << std::endl;
 	cout << "ambisonics in collaboration with VVAudio: http://www.vvaudio.com/ " << std::endl;
 	cout << std::endl;
-	cout << "usage: fmtconv -in-file test_s8.wav -in-fmt M1Spatial -out-file test_b.wav -out-fmt ACNSN3D -out-file-chans 0" << std::endl;
+	cout << "usage: ./m1-transcode -in-file test_s8.wav -in-fmt M1Spatial -out-file test_b.wav -out-fmt ACNSN3D -out-file-chans 0" << std::endl;
+    cout << "usage: ./m1-transcode -in-file test_s8.wav -in-fmt M1Spatial -out-file 7_1_2-ADM.wav -out-fmt 7.1.2_M -write-metada -out-file-chans 0" << std::endl;
+    cout << "all boolean argument flags should be used before the end of the command to ensure it is captured" << std::endl;
 	cout << std::endl;
 	cout << "  -help                 - list command line options" << std::endl;
 	cout << "  -in-file  <filename>  - input file: put quotes around sets of files" << std::endl;
@@ -210,7 +212,9 @@ std::string prepareAdmMetadata(const char* admString, float duration, int sample
     }
 
     for (size_t pos : positions){
-        s.replace(pos, searchDurationString.length(), hoursString+":"+minutesString+":"+secondsString+".00000");
+        if (pos != s.npos){
+            s.replace(pos, searchDurationString.length(), hoursString+":"+minutesString+":"+secondsString+".00000");
+        }
     }
 
     cout << "Detected Duration:  " << duration << std::endl;
@@ -219,34 +223,26 @@ std::string prepareAdmMetadata(const char* admString, float duration, int sample
     // set metadata for samplerate
     std::string searchSampleRateString("__SAMPLERATE__");
     size_t srPos = s.find(searchSampleRateString);
-    std::vector<size_t> srPositions;
     // Repeat till end is reached
     while(srPos != std::string::npos){
-        // Add position to the vector
-        srPositions.push_back(srPos);
+        if (srPos != s.npos) {
+            s.replace(srPos, searchDurationString.length(), std::to_string(sampleRate));
+        }
         // Get the next occurrence from the current position
         srPos = s.find(searchSampleRateString, srPos + searchSampleRateString.size());
-    }
-
-    for (size_t srPos : srPositions){
-        s.replace(srPos, searchDurationString.length(), std::to_string(sampleRate));
     }
     cout << "Detected SampleRate:  " << std::to_string(sampleRate) << std::endl;
     
     // set metadata for bitdepth
     std::string searchBitDepthString("__BITDEPTH__");
     size_t bdPos = s.find(searchBitDepthString);
-    std::vector<size_t> bdPositions;
     // Repeat till end is reached
     while(bdPos != std::string::npos){
-        // Add position to the vector
-        bdPositions.push_back(pos);
+        if (bdPos != s.npos) {
+            s.replace(bdPos, searchBitDepthString.length(), std::to_string(format));
+        }
         // Get the next occurrence from the current position
         bdPos = s.find(searchBitDepthString, bdPos + searchBitDepthString.size());
-    }
-
-    for (size_t bdPos : bdPositions){
-        s.replace(bdPos, searchBitDepthString.length(), std::to_string(format));
     }
     cout << "Detected BitDepth:  " << std::to_string(format) << std::endl;
 
@@ -590,7 +586,7 @@ int main(int argc, char* argv[]) {
             fNames.push_back(filename);
         }
     } else {
-        fNames.push_back(infilename);
+        // already pushed back the first index of the string from the split command above
     }
     
 	size_t numInFiles = fNames.size();
@@ -743,82 +739,93 @@ int main(int argc, char* argv[]) {
 					strcpy(outfilestr, outfilename);
 				}
 
+                /*
+                 Section for writing ADM based metadata to output
+                 */
 				if (writeMetadata) {
                     // Setup empty metadata chunks
                     bw64::ChnaChunk chnaChunkAdm;
                     std::string axmlChunkAdmCorrectedString;
+                    int bitDepth;
+                    if (inputInfo.format == SF_FORMAT_PCM_16){
+                        bitDepth = 16;
+                    } else if (inputInfo.format == SF_FORMAT_PCM_24) {
+                        bitDepth = 24;
+                    } else if (inputInfo.format == SF_FORMAT_FLOAT) {
+                        bitDepth = 32;
+                    }
                     
                     if (outFmt == m1transcode.getFormatFromString("7.1.2_M")){
                         // setup `chna` metadata chunk
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
-                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                        if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
 							break;
                         }
                         // setup `axml` metadata chunk
-                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_2_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_2_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, bitDepth).c_str();
                         bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
-                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
                     }
                     else if (outFmt == m1transcode.getFormatFromString("7.1.2_C")){
                         // setup `chna` metadata chunk
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
-                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                        if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
                             break;
                         }
                         // setup `axml` metadata chunk
-                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_2_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_2_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, bitDepth).c_str();
                         bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
-                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
                     }
                     else if (outFmt == m1transcode.getFormatFromString("5.1.4_M")){
                         // setup `chna` metadata chunk
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
-                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                        if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
                             break;
                         }
                         // setup `axml` metadata chunk
-                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_5_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_5_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, bitDepth).c_str();
                         bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
-                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
                     }
                     else if (outFmt == m1transcode.getFormatFromString("5.1.4_C")){
                         // setup `chna` metadata chunk
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
-                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                        if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
                             break;
                         }
                         // setup `axml` metadata chunk
-                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_5_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_5_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, bitDepth).c_str();
                         bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
-                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
                     }
                     else if (outFmt == m1transcode.getFormatFromString("7.1.4_M")){
                         // setup `chna` metadata chunk
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
-                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                        if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
                             break;
                         }
                         // setup `axml` metadata chunk
-                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, bitDepth).c_str();
                         bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
-                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
                     }
                     else if (outFmt == m1transcode.getFormatFromString("7.1.4_C")){
                         // setup `chna` metadata chunk
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
-                        if ((int)chnaChunkAdm.size() != actualOutFileChannels){
+                        if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
                             break;
                         }
                         // setup `axml` metadata chunk
                         axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
                         bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
-                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, inputInfo.format, chnaChunkAdm, axmlChunkAdmCorrected);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
                     }
 				}
 				else {
