@@ -77,81 +77,81 @@ string convertToString(char* a, int size) {
 }
 
 void printHelp() {
-	cout << "m1-transcode -- command line mach1 format conversion tool" << std::endl;
-	cout << "ambisonics in collaboration with VVAudio: http://www.vvaudio.com/ " << std::endl;
-	cout << std::endl;
-	cout << "usage: ./m1-transcode -in-file test_s8.wav -in-fmt M1Spatial -out-file test_b.wav -out-fmt ACNSN3D -out-file-chans 0" << std::endl;
-    cout << "usage: ./m1-transcode -in-file test_s8.wav -in-fmt M1Spatial -out-file 7_1_2-ADM.wav -out-fmt 7.1.2_M -write-metada -out-file-chans 0" << std::endl;
-    cout << "all boolean argument flags should be used before the end of the command to ensure it is captured" << std::endl;
-	cout << std::endl;
-	cout << "  -help                 - list command line options" << std::endl;
-	cout << "  -in-file  <filename>  - input file: put quotes around sets of files" << std::endl;
-	cout << "  -in-fmt   <fmt>       - input format: see supported formats below" << std::endl;
-    cout << "  -in-json  <json>      - input json: for input custom json Mach1Transcode templates" << std::endl;
-	cout << "  -out-file <filename>  - output file. full name for single file or name stem for file sets" << std::endl;
-	cout << "  -out-fmt  <fmt>       - output format: see supported formats below" << std::endl;
-    cout << "  -out-json  <json>     - output json: for output custom json Mach1Transcode templates" << std::endl;
-	cout << "  -out-file-chans <#>   - output file channels: 1, 2 or 0 (0 = multichannel)" << std::endl;
-	cout << "  -normalize            - two pass normalize absolute peak to zero dBFS" << std::endl;
-	cout << "  -master-gain <#>      - final output gain in dB like -3 or 2.3" << std::endl;
-	cout << "  -lfe-sub <#>          - indicates channel(s) to be filtered and treated as LFE/SUB, delimited by ',' for multiple channels" << std::endl;
-	cout << "  -spatial-downmix <#>  - compare top vs. bottom of the input soundfield, if difference is less than the set threshold (float) output format will be Mach1 Horizon" << std::endl;
-	cout << "  -extract-metadata     - export any detected XML metadata into separate text file" << std::endl;
-	cout << "  -write-metadata       - write channel-bed ADM metadata for supported formats" << std::endl;
-	cout << std::endl;
-	cout << "  Formats Supported:" << std::endl;
-    cout << "    M1Horizon (Mach1 Horizon / Quad) - L R Ls Rs" << std::endl;
-	cout << "    M1Horizon+S (Mach1 Horizon / Quad) - L R Ls Rs StereoL StereoR" << std::endl;
-	cout << "    M1HorizonPairs (Mach1 Horizon / Quad-Binaural) - FrontPair, LeftPair, RearPair, RightPair" << std::endl;
-	cout << "    M1Spatial (Mach1 Spatial) - Upper L R Ls Rs, Lower L R Ls Rs" << std::endl;
-	cout << "    M1Spatial+S (Mach1 Spatial) - Upper L R Ls Rs, Lower L R Ls Rs, StereoL StereoR" << std::endl;
-	cout << "    M1SpatialPairs (Mach1 Spatial Pairs) - Upper front, left, rear, right, pairs, then lower same" << std::endl;
-	cout << "    M1SpatialFaces - Fc, Lc, Rc, Bc, Tc, Bc" << std::endl;
-    cout << "    2.0_M                              - L & R spatialized" << std::endl;
-    cout << "    2.0_C                              - L & R spatialized, forward focus" << std::endl;
-    cout << "    3.0_LCR                            - L & R spatialized with C mono" << std::endl;
-	cout << "    5.0_M                              - L C R Ls Rs" << std::endl;
-    cout << "    5.0_C                              - L C R Ls Rs, cinema forward focus" << std::endl;
-    cout << "    5.0_S                              - L C R Ls Rs, 110 degree surround sides & cinema forward focus" << std::endl;
-	cout << "    5.1_M (Pro Tools default / C|24)   - L C R Ls Rs LFE" << std::endl;
-	cout << "    5.1_C (Pro Tools default / C|24)   - L C R Ls Rs LFE, forward focus" << std::endl;
-	cout << "    5.1_M (SMPTE/ITU for AC3)          - L R C LFE Ls Rs" << std::endl;
-	cout << "    5.1_M (DTS)                        - L R Ls Rs C LFE" << std::endl;
-    cout << "    5.0.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
-    cout << "    5.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
-    cout << "    5.0.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
-    cout << "    5.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
-    cout << "    5.1.4_C (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
-	cout << "    6.0_M                              - L C R Ls Rs Cs" << std::endl;
-    cout << "    7.0_C (Pro Tools default)          - L C R Lss Rss Lsr Rsr, forward focus" << std::endl;
-    cout << "    7.0_C (SMPTE)                      - L Lc C Rc R Ls Rs" << std::endl;
-	cout << "    7.1_M (Pro Tools default)          - L C R Lss Rss Lsr Rsr LFE" << std::endl;
-	cout << "    7.1_C (Pro Tools default)          - L C R Lss Rss Lsr Rsr LFE, forward focus" << std::endl;
-	cout << "    7.1_C (SMPTE)                      - L Lc C Rc R Ls Rs LFE" << std::endl;
-	cout << "    7.0.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr Lts Rts" << std::endl;
-    cout << "    7.0.2_M (SMPTE)                    - L R C Lss Rss Lsr Rsr Lts Rts" << std::endl;
-	cout << "    7.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE Lts Rts [ADM Metadata Supported]" << std::endl;
-    cout << "    7.1.2_C (Film / Pro Tools default) - L R C LFE Lss Rss Lsr Rsr Lts Rts [ADM Metadata Supported]" << std::endl;
-	cout << "    7.1.2_M (SMPTE)                    - L R C LFE Lss Rss Lsr Rsr Lts Rts" << std::endl;
-	cout << "    7.0.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
-	cout << "    7.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
-    cout << "    7.1.4_C (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
-    cout << "    16.0_M                             - 16 channel Surround 3D layout" << std::endl;
-	cout << "    ACNSN3D                            - 1st order B-format, ACN order and SN3D weighting" << std::endl;
-	cout << "    FuMa                               - 1st order B-format, Furse-Malham order and weighting" << std::endl;
-	cout << "    TBE                                - W, X, Y, Z, U, V, T, S" << std::endl;
-	cout << "    ACNSN3DO2A                         - 2nd order B-format, AmbiX ACN order and SN3D weighting" << std::endl;
-	cout << "    FuMaO2A                            - 2nd order B-format, Furse-Malham order and weighting, W, Y, Z, X, V, T, R, S, U" << std::endl;
-	cout << "    ACNSN3DO3A                         - 16 channel AmbiX" << std::endl;
-	cout << "    FuMaO3A                            - 3rd order B-format, W, Y, Z, X, V, T, R, S, U, Q, O, M, K, L, N, P" << std::endl;
-    cout << "    ACNSN3DmaxRE1oa                    - 1st order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    cout << "    ACNSN3DmaxRE2oa                    - 2nd order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    cout << "    ACNSN3DmaxRE3oa                    - 3rd order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    cout << "    ACNSN3DmaxRE4oa                    - 4th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    cout << "    ACNSN3DmaxRE5oa                    - 5th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    cout << "    ACNSN3DmaxRE6oa                    - 6th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    cout << "    ACNSN3DmaxRE7oa                    - 7th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-	cout << std::endl;
+	std::cout << "m1-transcode -- command line mach1 format conversion tool" << std::endl;
+	std::cout << "ambisonics in collaboration with VVAudio: http://www.vvaudio.com/ " << std::endl;
+	std::cout << std::endl;
+	std::cout << "usage: ./m1-transcode -in-file test_s8.wav -in-fmt M1Spatial -out-file test_b.wav -out-fmt ACNSN3D -out-file-chans 0" << std::endl;
+    std::cout << "usage: ./m1-transcode -in-file test_s8.wav -in-fmt M1Spatial -out-file 7_1_2-ADM.wav -out-fmt 7.1.2_M -write-metada -out-file-chans 0" << std::endl;
+    std::cout << "all boolean argument flags should be used before the end of the command to ensure it is captured" << std::endl;
+	std::cout << std::endl;
+	std::cout << "  -help                 - list command line options" << std::endl;
+	std::cout << "  -in-file  <filename>  - input file: put quotes around sets of files" << std::endl;
+	std::cout << "  -in-fmt   <fmt>       - input format: see supported formats below" << std::endl;
+    std::cout << "  -in-json  <json>      - input json: for input custom json Mach1Transcode templates" << std::endl;
+	std::cout << "  -out-file <filename>  - output file. full name for single file or name stem for file sets" << std::endl;
+	std::cout << "  -out-fmt  <fmt>       - output format: see supported formats below" << std::endl;
+    std::cout << "  -out-json  <json>     - output json: for output custom json Mach1Transcode templates" << std::endl;
+	std::cout << "  -out-file-chans <#>   - output file channels: 1, 2 or 0 (0 = multichannel)" << std::endl;
+	std::cout << "  -normalize            - two pass normalize absolute peak to zero dBFS" << std::endl;
+	std::cout << "  -master-gain <#>      - final output gain in dB like -3 or 2.3" << std::endl;
+	std::cout << "  -lfe-sub <#>          - indicates channel(s) to be filtered and treated as LFE/SUB, delimited by ',' for multiple channels" << std::endl;
+	std::cout << "  -spatial-downmix <#>  - compare top vs. bottom of the input soundfield, if difference is less than the set threshold (float) output format will be Mach1 Horizon" << std::endl;
+	std::cout << "  -extract-metadata     - export any detected XML metadata into separate text file" << std::endl;
+	std::cout << "  -write-metadata       - write channel-bed ADM metadata for supported formats" << std::endl;
+	std::cout << std::endl;
+	std::cout << "  Formats Supported:" << std::endl;
+    std::cout << "    M1Horizon (Mach1 Horizon / Quad) - L R Ls Rs" << std::endl;
+	std::cout << "    M1Horizon+S (Mach1 Horizon / Quad) - L R Ls Rs StereoL StereoR" << std::endl;
+	std::cout << "    M1HorizonPairs (Mach1 Horizon / Quad-Binaural) - FrontPair, LeftPair, RearPair, RightPair" << std::endl;
+	std::cout << "    M1Spatial (Mach1 Spatial) - Upper L R Ls Rs, Lower L R Ls Rs" << std::endl;
+	std::cout << "    M1Spatial+S (Mach1 Spatial) - Upper L R Ls Rs, Lower L R Ls Rs, StereoL StereoR" << std::endl;
+	std::cout << "    M1SpatialPairs (Mach1 Spatial Pairs) - Upper front, left, rear, right, pairs, then lower same" << std::endl;
+	std::cout << "    M1SpatialFaces - Fc, Lc, Rc, Bc, Tc, Bc" << std::endl;
+    std::cout << "    2.0_M                              - L & R spatialized" << std::endl;
+    std::cout << "    2.0_C                              - L & R spatialized, forward focus" << std::endl;
+    std::cout << "    3.0_LCR                            - L & R spatialized with C mono" << std::endl;
+	std::cout << "    5.0_M                              - L C R Ls Rs" << std::endl;
+    std::cout << "    5.0_C                              - L C R Ls Rs, cinema forward focus" << std::endl;
+    std::cout << "    5.0_S                              - L C R Ls Rs, 110 degree surround sides & cinema forward focus" << std::endl;
+	std::cout << "    5.1_M (Pro Tools default / C|24)   - L C R Ls Rs LFE" << std::endl;
+	std::cout << "    5.1_C (Pro Tools default / C|24)   - L C R Ls Rs LFE, forward focus" << std::endl;
+	std::cout << "    5.1_M (SMPTE/ITU for AC3)          - L R C LFE Ls Rs" << std::endl;
+	std::cout << "    5.1_M (DTS)                        - L R Ls Rs C LFE" << std::endl;
+    std::cout << "    5.0.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
+    std::cout << "    5.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
+    std::cout << "    5.0.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
+    std::cout << "    5.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
+    std::cout << "    5.1.4_C (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
+	std::cout << "    6.0_M                              - L C R Ls Rs Cs" << std::endl;
+    std::cout << "    7.0_C (Pro Tools default)          - L C R Lss Rss Lsr Rsr, forward focus" << std::endl;
+    std::cout << "    7.0_C (SMPTE)                      - L Lc C Rc R Ls Rs" << std::endl;
+	std::cout << "    7.1_M (Pro Tools default)          - L C R Lss Rss Lsr Rsr LFE" << std::endl;
+	std::cout << "    7.1_C (Pro Tools default)          - L C R Lss Rss Lsr Rsr LFE, forward focus" << std::endl;
+	std::cout << "    7.1_C (SMPTE)                      - L Lc C Rc R Ls Rs LFE" << std::endl;
+	std::cout << "    7.0.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr Lts Rts" << std::endl;
+    std::cout << "    7.0.2_M (SMPTE)                    - L R C Lss Rss Lsr Rsr Lts Rts" << std::endl;
+	std::cout << "    7.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE Lts Rts [ADM Metadata Supported]" << std::endl;
+    std::cout << "    7.1.2_C (Film / Pro Tools default) - L R C LFE Lss Rss Lsr Rsr Lts Rts [ADM Metadata Supported]" << std::endl;
+	std::cout << "    7.1.2_M (SMPTE)                    - L R C LFE Lss Rss Lsr Rsr Lts Rts" << std::endl;
+	std::cout << "    7.0.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
+	std::cout << "    7.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
+    std::cout << "    7.1.4_C (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
+    std::cout << "    16.0_M                             - 16 channel Surround 3D layout" << std::endl;
+	std::cout << "    ACNSN3D                            - 1st order B-format, ACN order and SN3D weighting" << std::endl;
+	std::cout << "    FuMa                               - 1st order B-format, Furse-Malham order and weighting" << std::endl;
+	std::cout << "    TBE                                - W, X, Y, Z, U, V, T, S" << std::endl;
+	std::cout << "    ACNSN3DO2A                         - 2nd order B-format, AmbiX ACN order and SN3D weighting" << std::endl;
+	std::cout << "    FuMaO2A                            - 2nd order B-format, Furse-Malham order and weighting, W, Y, Z, X, V, T, R, S, U" << std::endl;
+	std::cout << "    ACNSN3DO3A                         - 16 channel AmbiX" << std::endl;
+	std::cout << "    FuMaO3A                            - 3rd order B-format, W, Y, Z, X, V, T, R, S, U, Q, O, M, K, L, N, P" << std::endl;
+    std::cout << "    ACNSN3DmaxRE1oa                    - 1st order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
+    std::cout << "    ACNSN3DmaxRE2oa                    - 2nd order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
+    std::cout << "    ACNSN3DmaxRE3oa                    - 3rd order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
+    std::cout << "    ACNSN3DmaxRE4oa                    - 4th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
+    std::cout << "    ACNSN3DmaxRE5oa                    - 5th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
+    std::cout << "    ACNSN3DmaxRE6oa                    - 6th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
+    std::cout << "    ACNSN3DmaxRE7oa                    - 7th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
+	std::cout << std::endl;
 }
 
 struct audiofileInfo {
@@ -163,18 +163,18 @@ struct audiofileInfo {
 
 audiofileInfo printFileInfo(SndfileHandle file) {
     audiofileInfo inputFileInfo;
-    cout << "Sample Rate:        " << file.samplerate() << std::endl;
+    std::cout << "Sample Rate:        " << file.samplerate() << std::endl;
     inputFileInfo.sampleRate = file.samplerate();
     int format = file.format() & 0xffff;
-    if (format == SF_FORMAT_PCM_16) cout << "Bit Depth:          16" << std::endl;
-    if (format == SF_FORMAT_PCM_24) cout << "Bit Depth:          24" << std::endl;
-    if (format == SF_FORMAT_FLOAT)  cout << "Bit Depth:          32" << std::endl;
+    if (format == SF_FORMAT_PCM_16) std::cout << "Bit Depth:          16" << std::endl;
+    if (format == SF_FORMAT_PCM_24) std::cout << "Bit Depth:          24" << std::endl;
+    if (format == SF_FORMAT_FLOAT)  std::cout << "Bit Depth:          32" << std::endl;
     inputFileInfo.format = format;
-    cout << "Channels:           " << file.channels() << std::endl;
+    std::cout << "Channels:           " << file.channels() << std::endl;
     inputFileInfo.numberOfChannels = file.channels();
-    cout << "Length (sec):       " << (float)file.frames() / (float)file.samplerate() << std::endl;
+    std::cout << "Length (sec):       " << (float)file.frames() / (float)file.samplerate() << std::endl;
     inputFileInfo.duration = (float)file.frames() / (float)file.samplerate();
-    cout << std::endl;
+    std::cout << std::endl;
     
     return inputFileInfo;
 }
@@ -217,8 +217,8 @@ std::string prepareAdmMetadata(const char* admString, float duration, int sample
         }
     }
 
-    cout << "Detected Duration:  " << duration << std::endl;
-    cout << "Duration Timecode:  " << hoursString << ":" << minutesString << ":" << secondsString << ".00000" << std::endl;
+    std::cout << "Detected Duration:  " << duration << std::endl;
+    std::cout << "Duration Timecode:  " << hoursString << ":" << minutesString << ":" << secondsString << ".00000" << std::endl;
     
     // set metadata for samplerate
     std::string searchSampleRateString("__SAMPLERATE__");
@@ -231,7 +231,7 @@ std::string prepareAdmMetadata(const char* admString, float duration, int sample
         // Get the next occurrence from the current position
         srPos = s.find(searchSampleRateString, srPos + searchSampleRateString.size());
     }
-    cout << "Detected SampleRate:  " << std::to_string(sampleRate) << std::endl;
+    std::cout << "Detected SampleRate:  " << std::to_string(sampleRate) << std::endl;
     
     // set metadata for bitdepth
     std::string searchBitDepthString("__BITDEPTH__");
@@ -244,8 +244,8 @@ std::string prepareAdmMetadata(const char* admString, float duration, int sample
         // Get the next occurrence from the current position
         bdPos = s.find(searchBitDepthString, bdPos + searchBitDepthString.size());
     }
-    cout << "Detected BitDepth:  " << std::to_string(format) << std::endl;
-
+    std::cout << "Detected BitDepth:  " << std::to_string(format) << std::endl;
+    
     return s;
 }
 
@@ -322,8 +322,8 @@ void parseFile(SndfileHandle infile, int channels) {
 		for (k = 0; k < readcount; k++) {
 			for (m = 0; m < channels; m++) {
 				// search here for xml
-				//cout << "Buffer: " << buf [k * channels + m];
-				//cout << std::endl;
+				//std::cout << "Buffer: " << buf [k * channels + m];
+				//std::cout << std::endl;
 			}
 		}
 	};
@@ -439,7 +439,7 @@ int main(int argc, char* argv[]) {
 	}
 	if (spatialDownmixerMode && (corrThreshold < 0.0 || corrThreshold > 1.0))
 	{
-		cout << "Please use 0.0 to 1.0 range for correlation threshold" << std::endl;
+		std::cout << "Please use 0.0 to 1.0 range for correlation threshold" << std::endl;
 		return -1;
 	}
 	// input file name and format
@@ -488,7 +488,7 @@ int main(int argc, char* argv[]) {
             }
         }
 	} else {
-		cout << "Please select a valid input format" << std::endl;
+		std::cout << "Please select a valid input format" << std::endl;
 		return -1;
 	}
     
@@ -545,7 +545,7 @@ int main(int argc, char* argv[]) {
 		foundOutFmt = true;
 	}
 	else {
-		cout << "Please select a valid output format" << std::endl;
+		std::cout << "Please select a valid output format" << std::endl;
 		return -1;
 	}
 
@@ -556,7 +556,7 @@ int main(int argc, char* argv[]) {
 		outFileChans = 0;
 	if (!((outFileChans == 0) || (outFileChans == 1) || (outFileChans == 2)))
 	{
-		cout << "Please select 0, 1, or 2, zero meaning a single, multichannel output file" << std::endl;
+		std::cout << "Please select 0, 1, or 2, zero meaning a single, multichannel output file" << std::endl;
 		return -1;
 	}
 	// if "-extract-metadata arg detected, analyze and extract xml metadata
@@ -567,7 +567,7 @@ int main(int argc, char* argv[]) {
 			admParse.exportMetadata(infilename, md_outfilename, admParse.locateMetadata(infilename).mdStartIndex, admParse.locateMetadata(infilename).mdEndIndex, admParse.locateMetadata(infilename).totalFileSize);
 		}
 	}
-	cout << std::endl;
+	std::cout << std::endl;
 
 	//=================================================================
 	// initialize inputs, outputs and components
@@ -594,7 +594,7 @@ int main(int argc, char* argv[]) {
 		infile[i] = new SndfileHandle(fNames[i].c_str());
 		if (infile[i] && (infile[i]->error() == 0)) {
 			// print input file stats
-			cout << "Input File:         " << fNames[i] << std::endl;
+			std::cout << "Input File:         " << fNames[i] << std::endl;
             inputInfo = printFileInfo(*infile[i]);
 			sampleRate = (long)infile[i]->samplerate();
 			//            int inChannels = 0;
@@ -607,8 +607,8 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	cout << "Master Gain:        " << m1transcode.level2db(masterGain) << "dB" << std::endl;
-    cout << std::endl;
+	std::cout << "Master Gain:        " << m1transcode.level2db(masterGain) << "dB" << std::endl;
+    std::cout << std::endl;
 
 	for (int i = 0; i < numInFiles; i++) {
 		infile[i]->seek(0, 0); // rewind input
@@ -637,7 +637,7 @@ int main(int argc, char* argv[]) {
 	int actualOutFileChannels = outFileChans == 0 ? channels : outFileChans;
 
 	if (actualOutFileChannels == 0) {
-		cout << "Output channels count is 0!" << std::endl;
+		std::cout << "Output channels count is 0!" << std::endl;
 		return -1;
 	}
 
@@ -713,7 +713,7 @@ int main(int argc, char* argv[]) {
 			// normalize
 			if (normalize)
 			{
-				cout << "Reducing gain by " << m1transcode.level2db(peak) << std::endl;
+				std::cout << "Reducing gain by " << m1transcode.level2db(peak) << std::endl;
 				masterGain /= peak;
 			}
 
@@ -755,7 +755,8 @@ int main(int argc, char* argv[]) {
                         bitDepth = 32;
                     }
                     
-                    if (outFmt == m1transcode.getFormatFromString("7.1.2_M")){
+                    // TODO: remove the hardcoded `adm_metadata.h` file and write inline instructions for creating the metadata to scale for all formats
+                    if (outFmt == m1transcode.getFormatFromString("7.1.2_M") || outFmt == m1transcode.getFormatFromString("7.1.2_C") || outFmt == m1transcode.getFormatFromString("7.1.2_S")){
                         // setup `chna` metadata chunk
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
                         if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
@@ -767,19 +768,7 @@ int main(int argc, char* argv[]) {
                         bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
                         outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
                     }
-                    else if (outFmt == m1transcode.getFormatFromString("7.1.2_C")){
-                        // setup `chna` metadata chunk
-                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
-                        if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
-                            std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
-                            break;
-                        }
-                        // setup `axml` metadata chunk
-                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_2_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, bitDepth).c_str();
-                        bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
-                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
-                    }
-                    else if (outFmt == m1transcode.getFormatFromString("5.1.4_M")){
+                    else if (outFmt == m1transcode.getFormatFromString("5.1.4_M") || outFmt == m1transcode.getFormatFromString("5.1.4_C") || outFmt == m1transcode.getFormatFromString("5.1.4_S")){
                         // setup `chna` metadata chunk
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
                         if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
@@ -791,19 +780,7 @@ int main(int argc, char* argv[]) {
                         bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
                         outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
                     }
-                    else if (outFmt == m1transcode.getFormatFromString("5.1.4_C")){
-                        // setup `chna` metadata chunk
-                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
-                        if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
-                            std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
-                            break;
-                        }
-                        // setup `axml` metadata chunk
-                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_5_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, bitDepth).c_str();
-                        bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
-                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
-                    }
-                    else if (outFmt == m1transcode.getFormatFromString("7.1.4_M")){
+                    else if (outFmt == m1transcode.getFormatFromString("7.1.4_M") || outFmt == m1transcode.getFormatFromString("7.1.4_C") || outFmt == m1transcode.getFormatFromString("7.1.4_S")){
                         // setup `chna` metadata chunk
                         chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
                         if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
@@ -812,18 +789,6 @@ int main(int argc, char* argv[]) {
                         }
                         // setup `axml` metadata chunk
                         axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, bitDepth).c_str();
-                        bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
-                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
-                    }
-                    else if (outFmt == m1transcode.getFormatFromString("7.1.4_C")){
-                        // setup `chna` metadata chunk
-                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
-                        if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
-                            std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
-                            break;
-                        }
-                        // setup `axml` metadata chunk
-                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_7_1_4_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, inputInfo.format).c_str();
                         bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
                         outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
                     }
@@ -836,7 +801,7 @@ int main(int argc, char* argv[]) {
 					// set clipping mode
 					outfiles[i].setClip();
 					// output file stats
-					cout << "Output File:        " << outfilestr << std::endl;
+					std::cout << "Output File:        " << outfilestr << std::endl;
 					outfiles[i].printInfo();
 				}
 				else {
@@ -853,7 +818,7 @@ int main(int argc, char* argv[]) {
 					outfiles[i].setString(0x05, "mach1horizon-8");
 				}
 			}
-			cout << std::endl;
+			std::cout << std::endl;
 		}
 
 		// get start samples for all objects (ADM format)
@@ -937,6 +902,6 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	// print time played
-	cout << "Length (sec):       " << (float)totalSamples / (float)sampleRate << std::endl;
+	std::cout << "Length (sec):       " << (float)totalSamples / (float)sampleRate << std::endl;
 	return 0;
 }
