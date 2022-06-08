@@ -756,9 +756,25 @@ int main(int argc, char* argv[]) {
                     }
                     
                     // TODO: remove the hardcoded `adm_metadata.h` file and write inline instructions for creating the metadata to scale for all formats
-                    if (outFmt == m1transcode.getFormatFromString("7.1.2_M") || outFmt == m1transcode.getFormatFromString("7.1.2_C") || outFmt == m1transcode.getFormatFromString("7.1.2_S")){
+                    if (outFmt == m1transcode.getFormatFromString("M1Spatial")){
                         // setup `chna` metadata chunk
-                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
+                        /// Creates a description of an 8 objects
+                        std::vector<ChannelDescType> channelDescType = { {3}, {3}, {3}, {3}, {3}, {3}, {3}, {3} };
+                        chnaChunkAdm = fillChnaChunkADMDesc(channelDescType);
+                        if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
+                            std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
+                            break;
+                        }
+                        // setup `axml` metadata chunk
+                        axmlChunkAdmCorrectedString = prepareAdmMetadata(axml_m1spatial_ChunkAdmString, inputInfo.duration, inputInfo.sampleRate, bitDepth).c_str();
+                        bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
+                        outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
+                    }
+                    else if (outFmt == m1transcode.getFormatFromString("7.1.2_M") || outFmt == m1transcode.getFormatFromString("7.1.2_C") || outFmt == m1transcode.getFormatFromString("7.1.2_S")){
+                        // setup `chna` metadata chunk
+                        /// Creates a description of an 7.1.2 channel bed
+                        std::vector<ChannelDescType> channelDescType = { {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1} };
+                        chnaChunkAdm = fillChnaChunkADMDesc(channelDescType);
                         if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
 							break;
@@ -770,7 +786,9 @@ int main(int argc, char* argv[]) {
                     }
                     else if (outFmt == m1transcode.getFormatFromString("5.1.4_M") || outFmt == m1transcode.getFormatFromString("5.1.4_C") || outFmt == m1transcode.getFormatFromString("5.1.4_S")){
                         // setup `chna` metadata chunk
-                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
+                        /// Creates a description of an 5.1 channel bed + 4 object bed
+                        std::vector<ChannelDescType> channelDescType = { {1}, {1}, {1}, {1}, {1}, {1}, {3}, {3}, {3}, {3} };
+                        chnaChunkAdm = fillChnaChunkADMDesc(channelDescType);
                         if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
                             break;
@@ -782,7 +800,9 @@ int main(int argc, char* argv[]) {
                     }
                     else if (outFmt == m1transcode.getFormatFromString("7.1.4_M") || outFmt == m1transcode.getFormatFromString("7.1.4_C") || outFmt == m1transcode.getFormatFromString("7.1.4_S")){
                         // setup `chna` metadata chunk
-                        chnaChunkAdm = fillChnaChunkADMDesc(actualOutFileChannels);
+                        /// Creates a description of an 7.1 channel bed + 4 object bed
+                        std::vector<ChannelDescType> channelDescType = { {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {3}, {3}, {3}, {3} };
+                        chnaChunkAdm = fillChnaChunkADMDesc(channelDescType);
                         if (chnaChunkAdm.audioIds().size() != actualOutFileChannels){
                             std::cout << "ERROR: Issue writing `chna` metadata chunk due to mismatching channel count" << std::endl;
                             break;
