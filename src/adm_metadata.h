@@ -472,16 +472,16 @@ const char* axml_5_1_4_ChunkAdmString = R"(<?xml version="1.0" encoding="UTF-8"?
                 <audioTrackFormat audioTrackFormatID="AT_00011006_01" audioTrackFormatName="PCM_SurroundRight" formatDefinition="PCM" formatLabel="0001">
                     <audioStreamFormatIDRef>AS_00011006</audioStreamFormatIDRef>
                 </audioTrackFormat>
-                <audioTrackFormat audioTrackFormatID="AT_00031001_01" audioTrackFormatName="PCM_Atmos_Obj_1" formatDefinition="PCM" formatLabel="0001">
+                <audioTrackFormat audioTrackFormatID="AT_00031007_01" audioTrackFormatName="PCM_Atmos_Obj_1" formatDefinition="PCM" formatLabel="0001">
                     <audioStreamFormatIDRef>AS_00031007</audioStreamFormatIDRef>
                 </audioTrackFormat>
-                <audioTrackFormat audioTrackFormatID="AT_00031002_01" audioTrackFormatName="PCM_Atmos_Obj_2" formatDefinition="PCM" formatLabel="0001">
+                <audioTrackFormat audioTrackFormatID="AT_00031008_01" audioTrackFormatName="PCM_Atmos_Obj_2" formatDefinition="PCM" formatLabel="0001">
                     <audioStreamFormatIDRef>AS_00031008</audioStreamFormatIDRef>
                 </audioTrackFormat>
-                <audioTrackFormat audioTrackFormatID="AT_00031003_01" audioTrackFormatName="PCM_Atmos_Obj_3" formatDefinition="PCM" formatLabel="0001">
+                <audioTrackFormat audioTrackFormatID="AT_00031009_01" audioTrackFormatName="PCM_Atmos_Obj_3" formatDefinition="PCM" formatLabel="0001">
                     <audioStreamFormatIDRef>AS_00031009</audioStreamFormatIDRef>
                 </audioTrackFormat>
-                <audioTrackFormat audioTrackFormatID="AT_00031004_01" audioTrackFormatName="PCM_Atmos_Obj_4" formatDefinition="PCM" formatLabel="0001">
+                <audioTrackFormat audioTrackFormatID="AT_0003100a_01" audioTrackFormatName="PCM_Atmos_Obj_4" formatDefinition="PCM" formatLabel="0001">
                     <audioStreamFormatIDRef>AS_0003100a</audioStreamFormatIDRef>
                 </audioTrackFormat>
                 <audioTrackUID UID="ATU_00000001" bitDepth="__BITDEPTH__" sampleRate="__SAMPLERATE__">
