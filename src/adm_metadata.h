@@ -32,49 +32,49 @@ const char* axml_m1spatial_ChunkAdmString = R"(<?xml version="1.0" encoding="UTF
     <coreMetadata>
         <format>
             <audioFormatExtended >
-                <audioProgramme audioProgrammeID="APR_1001" audioProgrammeName="ADM_Master" start="00:00:00.00000" end="hh:mm:ss.fffff">
+                <audioProgramme audioProgrammeID="APR_1001" audioProgrammeName="Atmos_Master" start="01:00:00.00000" end="01:00:01.87733">
                     <audioContentIDRef>ACO_1001</audioContentIDRef>
                 </audioProgramme>
                 <audioContent audioContentID="ACO_1001" audioContentName="Atmos_Master_Content">
-                    <audioObjectIDRef>AO_1001</audioObjectIDRef>
-                    <audioObjectIDRef>AO_1002</audioObjectIDRef>
-                    <audioObjectIDRef>AO_1003</audioObjectIDRef>
-                    <audioObjectIDRef>AO_1004</audioObjectIDRef>
-                    <audioObjectIDRef>AO_1005</audioObjectIDRef>
-                    <audioObjectIDRef>AO_1006</audioObjectIDRef>
-                    <audioObjectIDRef>AO_1007</audioObjectIDRef>
-                    <audioObjectIDRef>AO_1008</audioObjectIDRef>
+                    <audioObjectIDRef>AO_100b</audioObjectIDRef>
+                    <audioObjectIDRef>AO_100c</audioObjectIDRef>
+                    <audioObjectIDRef>AO_100d</audioObjectIDRef>
+                    <audioObjectIDRef>AO_100e</audioObjectIDRef>
+                    <audioObjectIDRef>AO_100f</audioObjectIDRef>
+                    <audioObjectIDRef>AO_1010</audioObjectIDRef>
+                    <audioObjectIDRef>AO_1011</audioObjectIDRef>
+                    <audioObjectIDRef>AO_1012</audioObjectIDRef>
                     <dialogue mixedContentKind="0">2</dialogue>
                 </audioContent>
-                <audioObject audioObjectID="AO_1001" audioObjectName="Atmos_Obj_1" start="00:00:00.00000" duration="hh:mm:ss.fffff">
+                <audioObject audioObjectID="AO_100b" audioObjectName="Audio 1" start="00:00:00.00000" duration="hh:mm:ss.fffff">
                     <audioPackFormatIDRef>AP_00031001</audioPackFormatIDRef>
                     <audioTrackUIDRef>ATU_00000001</audioTrackUIDRef>
                 </audioObject>
-                <audioObject audioObjectID="AO_1002" audioObjectName="Atmos_Obj_2" start="00:00:00.00000" duration="hh:mm:ss.fffff">
+                <audioObject audioObjectID="AO_100c" audioObjectName="Audio 2" start="00:00:00.00000" duration="hh:mm:ss.fffff">
                     <audioPackFormatIDRef>AP_00031002</audioPackFormatIDRef>
                     <audioTrackUIDRef>ATU_00000002</audioTrackUIDRef>
                 </audioObject>
-                <audioObject audioObjectID="AO_1003" audioObjectName="Atmos_Obj_3" start="00:00:00.00000" duration="hh:mm:ss.fffff">
+                <audioObject audioObjectID="AO_100d" audioObjectName="Audio 3" start="00:00:00.00000" duration="hh:mm:ss.fffff">
                     <audioPackFormatIDRef>AP_00031003</audioPackFormatIDRef>
                     <audioTrackUIDRef>ATU_00000003</audioTrackUIDRef>
                 </audioObject>
-                <audioObject audioObjectID="AO_1004" audioObjectName="Atmos_Obj_4" start="00:00:00.00000" duration="hh:mm:ss.fffff">
+                <audioObject audioObjectID="AO_100e" audioObjectName="Audio 4" start="00:00:00.00000" duration="hh:mm:ss.fffff">
                     <audioPackFormatIDRef>AP_00031004</audioPackFormatIDRef>
                     <audioTrackUIDRef>ATU_00000004</audioTrackUIDRef>
                 </audioObject>
-                <audioObject audioObjectID="AO_1005" audioObjectName="Atmos_Obj_5" start="00:00:00.00000" duration="hh:mm:ss.fffff">
+                <audioObject audioObjectID="AO_100f" audioObjectName="Audio 5" start="00:00:00.00000" duration="hh:mm:ss.fffff">
                     <audioPackFormatIDRef>AP_00031005</audioPackFormatIDRef>
                     <audioTrackUIDRef>ATU_00000005</audioTrackUIDRef>
                 </audioObject>
-                <audioObject audioObjectID="AO_1006" audioObjectName="Atmos_Obj_6" start="00:00:00.00000" duration="hh:mm:ss.fffff">
+                <audioObject audioObjectID="AO_1010" audioObjectName="Audio 6" start="00:00:00.00000" duration="hh:mm:ss.fffff">
                     <audioPackFormatIDRef>AP_00031006</audioPackFormatIDRef>
                     <audioTrackUIDRef>ATU_00000006</audioTrackUIDRef>
                 </audioObject>
-                <audioObject audioObjectID="AO_1007" audioObjectName="Atmos_Obj_7" start="00:00:00.00000" duration="hh:mm:ss.fffff">
+                <audioObject audioObjectID="AO_1011" audioObjectName="Audio 7" start="00:00:00.00000" duration="hh:mm:ss.fffff">
                     <audioPackFormatIDRef>AP_00031007</audioPackFormatIDRef>
                     <audioTrackUIDRef>ATU_00000007</audioTrackUIDRef>
                 </audioObject>
-                <audioObject audioObjectID="AO_1008" audioObjectName="Atmos_Obj_8" start="00:00:00.00000" duration="hh:mm:ss.fffff">
+                <audioObject audioObjectID="AO_1012" audioObjectName="Audio 8" start="00:00:00.00000" duration="hh:mm:ss.fffff">
                     <audioPackFormatIDRef>AP_00031008</audioPackFormatIDRef>
                     <audioTrackUIDRef>ATU_00000008</audioTrackUIDRef>
                 </audioObject>
@@ -102,110 +102,118 @@ const char* axml_m1spatial_ChunkAdmString = R"(<?xml version="1.0" encoding="UTF
                 <audioPackFormat audioPackFormatID="AP_00031008" audioPackFormatName="Atmos_Obj_8" typeDefinition="Objects" typeLabel="0003">
                     <audioChannelFormatIDRef>AC_00031008</audioChannelFormatIDRef>
                 </audioPackFormat>
-                <audioChannelFormat audioChannelFormatID="AC_00031001" audioChannelFormatName="Atmos_Obj_1" typeLabel="0003" typeDefinition="Objects">
-                  <audioBlockFormat audioBlockFormatID="AB_00031001_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
-                    <speakerLabel>Ltf</speakerLabel>
-                    <cartesian>1</cartesian>
-                    <position coordinate="X">-1.0000000000</position>
-                    <position coordinate="Y">1.0000000000</position>
-                    <position coordinate="Z">1.0000000000</position>
-                  </audioBlockFormat>
+                <audioChannelFormat audioChannelFormatID="AC_00031001" audioChannelFormatName="Atmos_Obj_1" typeDefinition="Objects" typeLabel="0003">
+                    <audioBlockFormat audioBlockFormatID="AB_00031001_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
+                        <cartesian>1</cartesian>
+                        <position coordinate="X">-1.0000000000</position>
+                        <position coordinate="Y">1.0000000000</position>
+                        <position coordinate="Z">1.0000000000</position>
+                        <jumpPosition interpolationLength="0.000000">1</jumpPosition>
+                    </audioBlockFormat>
                 </audioChannelFormat>
-                <audioChannelFormat audioChannelFormatID="AC_00031002" audioChannelFormatName="Atmos_Obj_2" typeLabel="0003" typeDefinition="Objects">
-                  <audioBlockFormat audioBlockFormatID="AB_00031002_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
-                    <speakerLabel>Rtf</speakerLabel>
-                    <cartesian>1</cartesian>
-                    <position coordinate="X">1.0000000000</position>
-                    <position coordinate="Y">1.0000000000</position>
-                    <position coordinate="Z">1.0000000000</position>
-                  </audioBlockFormat>
+                <audioChannelFormat audioChannelFormatID="AC_00031002" audioChannelFormatName="Atmos_Obj_2" typeDefinition="Objects" typeLabel="0003">
+                    <audioBlockFormat audioBlockFormatID="AB_00031002_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
+                        <cartesian>1</cartesian>
+                        <position coordinate="X">1.0000000000</position>
+                        <position coordinate="Y">1.0000000000</position>
+                        <position coordinate="Z">1.0000000000</position>
+                        <jumpPosition interpolationLength="0.000000">1</jumpPosition>
+                    </audioBlockFormat>
                 </audioChannelFormat>
-                <audioChannelFormat audioChannelFormatID="AC_00031003" audioChannelFormatName="Atmos_Obj_3" typeLabel="0003" typeDefinition="Objects">
-                  <audioBlockFormat audioBlockFormatID="AB_00031003_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
-                    <speakerLabel>Ltr</speakerLabel>
-                    <cartesian>1</cartesian>
-                    <position coordinate="X">-1.0000000000</position>
-                    <position coordinate="Y">-1.0000000000</position>
-                    <position coordinate="Z">1.0000000000</position>
-                  </audioBlockFormat>
+                <audioChannelFormat audioChannelFormatID="AC_00031003" audioChannelFormatName="Atmos_Obj_3" typeDefinition="Objects" typeLabel="0003">
+                    <audioBlockFormat audioBlockFormatID="AB_00031003_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
+                        <cartesian>1</cartesian>
+                        <position coordinate="X">-1.0000000000</position>
+                        <position coordinate="Y">-1.0000000000</position>
+                        <position coordinate="Z">1.0000000000</position>
+                        <jumpPosition interpolationLength="0.000000">1</jumpPosition>
+                    </audioBlockFormat>
                 </audioChannelFormat>
-                <audioChannelFormat audioChannelFormatID="AC_00031004" audioChannelFormatName="Atmos_Obj_4" typeLabel="0003" typeDefinition="Objects">
-                  <audioBlockFormat audioBlockFormatID="AB_00031004_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
-                    <speakerLabel>Rtr</speakerLabel>
-                    <cartesian>1</cartesian>
-                    <position coordinate="X">1.0000000000</position>
-                    <position coordinate="Y">-1.0000000000</position>
-                    <position coordinate="Z">1.0000000000</position>
-                  </audioBlockFormat>
+                <audioChannelFormat audioChannelFormatID="AC_00031004" audioChannelFormatName="Atmos_Obj_4" typeDefinition="Objects" typeLabel="0003">
+                    <audioBlockFormat audioBlockFormatID="AB_00031004_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
+                        <cartesian>1</cartesian>
+                        <position coordinate="X">1.0000000000</position>
+                        <position coordinate="Y">-1.0000000000</position>
+                        <position coordinate="Z">1.0000000000</position>
+                        <jumpPosition interpolationLength="0.000000">1</jumpPosition>
+                    </audioBlockFormat>
                 </audioChannelFormat>
-                <audioChannelFormat audioChannelFormatID="AC_00031005" audioChannelFormatName="Atmos_Obj_5" typeLabel="0003" typeDefinition="Objects">
-                  <audioBlockFormat audioBlockFormatID="AB_00031005_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
-                    <speakerLabel>Ltf</speakerLabel>
-                    <cartesian>1</cartesian>
-                    <position coordinate="X">-1.0000000000</position>
-                    <position coordinate="Y">1.0000000000</position>
-                    <position coordinate="Z">-1.0000000000</position>
-                  </audioBlockFormat>
+                <audioChannelFormat audioChannelFormatID="AC_00031005" audioChannelFormatName="Atmos_Obj_5" typeDefinition="Objects" typeLabel="0003">
+                    <audioBlockFormat audioBlockFormatID="AB_00031005_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
+                        <cartesian>1</cartesian>
+                        <position coordinate="X">-1.0000000000</position>
+                        <position coordinate="Y">1.0000000000</position>
+                        <position coordinate="Z">-1.0000000000</position>
+                        <jumpPosition interpolationLength="0.000000">1</jumpPosition>
+                    </audioBlockFormat>
                 </audioChannelFormat>
-                <audioChannelFormat audioChannelFormatID="AC_00031006" audioChannelFormatName="Atmos_Obj_6" typeLabel="0003" typeDefinition="Objects">
-                  <audioBlockFormat audioBlockFormatID="AB_00031006_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
-                    <speakerLabel>Rtf</speakerLabel>
-                    <cartesian>1</cartesian>
-                    <position coordinate="X">1.0000000000</position>
-                    <position coordinate="Y">1.0000000000</position>
-                    <position coordinate="Z">-1.0000000000</position>
-                  </audioBlockFormat>
+                <audioChannelFormat audioChannelFormatID="AC_00031006" audioChannelFormatName="Atmos_Obj_6" typeDefinition="Objects" typeLabel="0003">
+                    <audioBlockFormat audioBlockFormatID="AB_00031006_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
+                        <cartesian>1</cartesian>
+                        <position coordinate="X">1.0000000000</position>
+                        <position coordinate="Y">1.0000000000</position>
+                        <position coordinate="Z">-1.0000000000</position>
+                        <jumpPosition interpolationLength="0.000000">1</jumpPosition>
+                    </audioBlockFormat>
                 </audioChannelFormat>
-                <audioChannelFormat audioChannelFormatID="AC_00031007" audioChannelFormatName="Atmos_Obj_7" typeLabel="0003" typeDefinition="Objects">
-                  <audioBlockFormat audioBlockFormatID="AB_00031007_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
-                    <speakerLabel>Ltr</speakerLabel>
-                    <cartesian>1</cartesian>
-                    <position coordinate="X">-1.0000000000</position>
-                    <position coordinate="Y">-1.0000000000</position>
-                    <position coordinate="Z">-1.0000000000</position>
-                  </audioBlockFormat>
+                <audioChannelFormat audioChannelFormatID="AC_00031007" audioChannelFormatName="Atmos_Obj_7" typeDefinition="Objects" typeLabel="0003">
+                    <audioBlockFormat audioBlockFormatID="AB_00031007_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
+                        <cartesian>1</cartesian>
+                        <position coordinate="X">-1.0000000000</position>
+                        <position coordinate="Y">-1.0000000000</position>
+                        <position coordinate="Z">-1.0000000000</position>
+                        <jumpPosition interpolationLength="0.000000">1</jumpPosition>
+                    </audioBlockFormat>
                 </audioChannelFormat>
-                <audioChannelFormat audioChannelFormatID="AC_00031008" audioChannelFormatName="Atmos_Obj_8" typeLabel="0003" typeDefinition="Objects">
-                  <audioBlockFormat audioBlockFormatID="AB_00031008_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
-                    <speakerLabel>Rtr</speakerLabel>
-                    <cartesian>1</cartesian>
-                    <position coordinate="X">1.0000000000</position>
-                    <position coordinate="Y">-1.0000000000</position>
-                    <position coordinate="Z">-1.0000000000</position>
-                  </audioBlockFormat>
+                <audioChannelFormat audioChannelFormatID="AC_00031008" audioChannelFormatName="Atmos_Obj_8" typeDefinition="Objects" typeLabel="0003">
+                    <audioBlockFormat audioBlockFormatID="AB_00031008_00000001" rtime="00:00:00.00000" duration="hh:mm:ss.fffff">
+                        <cartesian>1</cartesian>
+                        <position coordinate="X">1.0000000000</position>
+                        <position coordinate="Y">-1.0000000000</position>
+                        <position coordinate="Z">-1.0000000000</position>
+                        <jumpPosition interpolationLength="0.000000">1</jumpPosition>
+                    </audioBlockFormat>
                 </audioChannelFormat>
                 <audioStreamFormat audioStreamFormatID="AS_00031001" audioStreamFormatName="PCM_Atmos_Obj_1" formatDefinition="PCM" formatLabel="0001">
                     <audioChannelFormatIDRef>AC_00031001</audioChannelFormatIDRef>
+                    <audioPackFormatIDRef>AP_00031001</audioPackFormatIDRef>
                     <audioTrackFormatIDRef>AT_00031001_01</audioTrackFormatIDRef>
                 </audioStreamFormat>
                 <audioStreamFormat audioStreamFormatID="AS_00031002" audioStreamFormatName="PCM_Atmos_Obj_2" formatDefinition="PCM" formatLabel="0001">
                     <audioChannelFormatIDRef>AC_00031002</audioChannelFormatIDRef>
+                    <audioPackFormatIDRef>AP_00031002</audioPackFormatIDRef>
                     <audioTrackFormatIDRef>AT_00031002_01</audioTrackFormatIDRef>
                 </audioStreamFormat>
                 <audioStreamFormat audioStreamFormatID="AS_00031003" audioStreamFormatName="PCM_Atmos_Obj_3" formatDefinition="PCM" formatLabel="0001">
                     <audioChannelFormatIDRef>AC_00031003</audioChannelFormatIDRef>
+                    <audioPackFormatIDRef>AP_00031003</audioPackFormatIDRef>
                     <audioTrackFormatIDRef>AT_00031003_01</audioTrackFormatIDRef>
                 </audioStreamFormat>
                 <audioStreamFormat audioStreamFormatID="AS_00031004" audioStreamFormatName="PCM_Atmos_Obj_4" formatDefinition="PCM" formatLabel="0001">
                     <audioChannelFormatIDRef>AC_00031004</audioChannelFormatIDRef>
+                    <audioPackFormatIDRef>AP_00031004</audioPackFormatIDRef>
                     <audioTrackFormatIDRef>AT_00031004_01</audioTrackFormatIDRef>
                 </audioStreamFormat>
                 <audioStreamFormat audioStreamFormatID="AS_00031005" audioStreamFormatName="PCM_Atmos_Obj_5" formatDefinition="PCM" formatLabel="0001">
                     <audioChannelFormatIDRef>AC_00031005</audioChannelFormatIDRef>
+                    <audioPackFormatIDRef>AP_00031005</audioPackFormatIDRef>
                     <audioTrackFormatIDRef>AT_00031005_01</audioTrackFormatIDRef>
                 </audioStreamFormat>
                 <audioStreamFormat audioStreamFormatID="AS_00031006" audioStreamFormatName="PCM_Atmos_Obj_6" formatDefinition="PCM" formatLabel="0001">
                     <audioChannelFormatIDRef>AC_00031006</audioChannelFormatIDRef>
+                    <audioPackFormatIDRef>AP_00031006</audioPackFormatIDRef>
                     <audioTrackFormatIDRef>AT_00031006_01</audioTrackFormatIDRef>
                 </audioStreamFormat>
                 <audioStreamFormat audioStreamFormatID="AS_00031007" audioStreamFormatName="PCM_Atmos_Obj_7" formatDefinition="PCM" formatLabel="0001">
                     <audioChannelFormatIDRef>AC_00031007</audioChannelFormatIDRef>
+                    <audioPackFormatIDRef>AP_00031007</audioPackFormatIDRef>
                     <audioTrackFormatIDRef>AT_00031007_01</audioTrackFormatIDRef>
                 </audioStreamFormat>
                 <audioStreamFormat audioStreamFormatID="AS_00031008" audioStreamFormatName="PCM_Atmos_Obj_8" formatDefinition="PCM" formatLabel="0001">
                     <audioChannelFormatIDRef>AC_00031008</audioChannelFormatIDRef>
+                    <audioPackFormatIDRef>AP_00031008</audioPackFormatIDRef>
                     <audioTrackFormatIDRef>AT_00031008_01</audioTrackFormatIDRef>
-                </audioStreamFormat>                
+                </audioStreamFormat>
                 <audioTrackFormat audioTrackFormatID="AT_00031001_01" audioTrackFormatName="PCM_Atmos_Obj_1" formatDefinition="PCM" formatLabel="0001">
                     <audioStreamFormatIDRef>AS_00031001</audioStreamFormatIDRef>
                 </audioTrackFormat>
@@ -231,27 +239,27 @@ const char* axml_m1spatial_ChunkAdmString = R"(<?xml version="1.0" encoding="UTF
                     <audioStreamFormatIDRef>AS_00031008</audioStreamFormatIDRef>
                 </audioTrackFormat>
                 <audioTrackUID UID="ATU_00000001" bitDepth="__BITDEPTH__" sampleRate="__SAMPLERATE__">
-                    <audioTrackFormatIDRef>AT_00011001_01</audioTrackFormatIDRef>
+                    <audioTrackFormatIDRef>AT_00031001_01</audioTrackFormatIDRef>
                     <audioPackFormatIDRef>AP_00031001</audioPackFormatIDRef>
                 </audioTrackUID>
                 <audioTrackUID UID="ATU_00000002" bitDepth="__BITDEPTH__" sampleRate="__SAMPLERATE__">
-                    <audioTrackFormatIDRef>AT_00011002_01</audioTrackFormatIDRef>
+                    <audioTrackFormatIDRef>AT_00031002_01</audioTrackFormatIDRef>
                     <audioPackFormatIDRef>AP_00031002</audioPackFormatIDRef>
                 </audioTrackUID>
                 <audioTrackUID UID="ATU_00000003" bitDepth="__BITDEPTH__" sampleRate="__SAMPLERATE__">
-                    <audioTrackFormatIDRef>AT_00011003_01</audioTrackFormatIDRef>
+                    <audioTrackFormatIDRef>AT_00031003_01</audioTrackFormatIDRef>
                     <audioPackFormatIDRef>AP_00031003</audioPackFormatIDRef>
                 </audioTrackUID>
                 <audioTrackUID UID="ATU_00000004" bitDepth="__BITDEPTH__" sampleRate="__SAMPLERATE__">
-                    <audioTrackFormatIDRef>AT_00011004_01</audioTrackFormatIDRef>
+                    <audioTrackFormatIDRef>AT_00031004_01</audioTrackFormatIDRef>
                     <audioPackFormatIDRef>AP_00031004</audioPackFormatIDRef>
                 </audioTrackUID>
                 <audioTrackUID UID="ATU_00000005" bitDepth="__BITDEPTH__" sampleRate="__SAMPLERATE__">
-                    <audioTrackFormatIDRef>AT_00011005_01</audioTrackFormatIDRef>
+                    <audioTrackFormatIDRef>AT_00031005_01</audioTrackFormatIDRef>
                     <audioPackFormatIDRef>AP_00031005</audioPackFormatIDRef>
                 </audioTrackUID>
                 <audioTrackUID UID="ATU_00000006" bitDepth="__BITDEPTH__" sampleRate="__SAMPLERATE__">
-                    <audioTrackFormatIDRef>AT_00011006_01</audioTrackFormatIDRef>
+                    <audioTrackFormatIDRef>AT_00031006_01</audioTrackFormatIDRef>
                     <audioPackFormatIDRef>AP_00031006</audioPackFormatIDRef>
                 </audioTrackUID>
                 <audioTrackUID UID="ATU_00000007" bitDepth="__BITDEPTH__" sampleRate="__SAMPLERATE__">
