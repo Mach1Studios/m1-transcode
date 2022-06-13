@@ -229,6 +229,8 @@ const char* axml_m1spatial_ChunkAdmString = R"(<?xml version="1.0" encoding="UTF
                 <audioTrackFormat audioTrackFormatID="AT_00031005_01" audioTrackFormatName="PCM_Atmos_Obj_5" formatDefinition="PCM" formatLabel="0001">
                     <audioStreamFormatIDRef>AS_00031005</audioStreamFormatIDRef>
                 </audioTrackFormat>
+)"
+R"(
                 <audioTrackFormat audioTrackFormatID="AT_00031006_01" audioTrackFormatName="PCM_Atmos_Obj_6" formatDefinition="PCM" formatLabel="0001">
                     <audioStreamFormatIDRef>AS_00031006</audioStreamFormatIDRef>
                 </audioTrackFormat>
@@ -483,6 +485,8 @@ const char* axml_5_1_4_ChunkAdmString = R"(<?xml version="1.0" encoding="UTF-8"?
                 <audioTrackFormat audioTrackFormatID="AT_00031007_01" audioTrackFormatName="PCM_Atmos_Obj_1" formatDefinition="PCM" formatLabel="0001">
                     <audioStreamFormatIDRef>AS_00031007</audioStreamFormatIDRef>
                 </audioTrackFormat>
+)"
+R"(
                 <audioTrackFormat audioTrackFormatID="AT_00031008_01" audioTrackFormatName="PCM_Atmos_Obj_2" formatDefinition="PCM" formatLabel="0001">
                     <audioStreamFormatIDRef>AS_00031008</audioStreamFormatIDRef>
                 </audioTrackFormat>
@@ -1001,6 +1005,8 @@ const char* axml_7_1_4_ChunkAdmString = R"(<?xml version="1.0" encoding="UTF-8"?
                     <audioChannelFormatIDRef>AC_0003100b</audioChannelFormatIDRef>
                     <audioTrackFormatIDRef>AT_0003100b_01</audioTrackFormatIDRef>
                 </audioStreamFormat>
+)"
+R"(
                 <audioStreamFormat audioStreamFormatID="AS_0003100c" audioStreamFormatName="PCM_Atmos_Obj_4" formatDefinition="PCM" formatLabel="0001">
                     <audioChannelFormatIDRef>AC_0003100c</audioChannelFormatIDRef>
                     <audioTrackFormatIDRef>AT_0003100c_01</audioTrackFormatIDRef>

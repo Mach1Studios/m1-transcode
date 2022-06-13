@@ -11,8 +11,8 @@ REM   + M1SDK_PATH=
 REM   + M1TT_PATH=
 
 cd %M1TT_PATH%
-python ../../../polly/bin/polly.py --clear --install --config Release --toolchain vs-15-2017
-python ../../../polly/bin/polly.py --clear --install --config Release --toolchain vs-15-2017-win64
+python ../../polly/bin/polly.py --clear --install --config Release --toolchain vs-15-2017
+python ../../polly/bin/polly.py --clear --install --config Release --toolchain vs-15-2017-win64
 
 DEL /Q /F /S "m1-transcode-win-x64"
 DEL /Q /F /S "m1-transcode-win-x86"
