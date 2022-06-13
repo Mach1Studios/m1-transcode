@@ -9,23 +9,23 @@
 # - Requires M1-SDK repo
 # - Setup your local vars: 
 #   + M1SDK_PATH=
-#   + M1TT_PATH=
 #
 
 # build for macos
-/Volumes/git/polly/bin/polly --clear --install --config Release --toolchain xcode
+cmake . -G Xcode -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9
+cmake --build . --config Release
 
-cd $M1TT_PATH
+ls
 rm -rf "m1-transcode-osx-x64"
 rm "m1-transcode-osx-x64.zip"
 mkdir -p "m1-transcode-osx-x64"
 cd "m1-transcode-osx-x64"
 mkdir -p license
 
-cp -f ../_install/xcode/bin/m1-transcode $M1SDK_PATH/executables/unix/m1-transcode
+cp -f ../Release/m1-transcode $M1SDK_PATH/executables/unix/m1-transcode
 cp -f $M1SDK_PATH/license/LICENSE.txt $M1SDK_PATH/executables/unix/LICENSE.txt
 
-cp -f ../_install/xcode/bin/m1-transcode ./m1-transcode
+cp -f ../Release/m1-transcode ./m1-transcode
 cp -f $M1SDK_PATH/license/LICENSE.txt license/LICENSE.txt
 cp -f $M1SDK_PATH/license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf
 cp -Rf $M1SDK_PATH/license/attribution license/attribution

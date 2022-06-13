@@ -9,16 +9,12 @@
 # - Requires M1-SDK repo
 # - Setup your local vars: 
 #   + M1SDK_PATH=
-#   + M1TT_PATH=
 #
 
-M1TT_PATH=~/git/m1-transcodertools/m1-transcode
-M1SDK_PATH=~/git/m1-sdk
-
 # build for linux
-~/git/polly/bin/polly --clear --install --config Release --toolchain gcc
+cmake .
+cmake --build . --config Release
 
-cd $M1TT_PATH
 rm -rf "m1-transcode-linux-arm"
 rm "m1-transcode-linux-arm.zip"
 mkdir -p "m1-transcode-linux-arm"
