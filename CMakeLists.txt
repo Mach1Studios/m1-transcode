@@ -1,6 +1,22 @@
+#----------------
+# Setup
+#----------------
+
 cmake_minimum_required(VERSION 3.5)
 project(m1-transcode)
 set(CMAKE_CXX_STANDARD 11)
+
+if(NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE "Release")
+   message(STATUS "Build type not specified: default is Release")
+endif()
+
+message(STATUS "CMAKE_VERSION=${CMAKE_VERSION}")
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
+# Prepend our CMake modules directory
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
+message(STATUS "CMAKE_MODULE_PATH='${CMAKE_MODULE_PATH}'")
 
 if (NOT "$ENV{M1SDK_PATH}" STREQUAL "")
     set(MACH1SPATIAL_SDK_PATH "$ENV{M1SDK_PATH}" CACHE INTERNAL "Copied from environment variable")
@@ -32,39 +48,74 @@ else()
     message(FATAL_ERROR "unexpected: the local M1SDK_PATH environment variable is not set or is empty!")
 endif()
 
-# Use pkg-config to get hints about paths
-find_package(PkgConfig QUIET)
-if(PKG_CONFIG_FOUND)
-    pkg_check_modules(LIBSNDFILE_PKGCONF sndfile)
-endif(PKG_CONFIG_FOUND)
+#----------------
+# Version
+#----------------
 
-# - Try to find libsndfile
-# Once done, this will define
-#  LIBSNDFILE_FOUND - system has libsndfile
-#  LIBSNDFILE_INCLUDE_DIRS - the libsndfile include directories
-#  LIBSNDFILE_LIBRARIES - link these to use libsndfile
+# Read version number from VERSION file and split into its component parts.
 
-# Include dir
-find_path(LIBSNDFILE_INCLUDE_DIR
-        NAMES sndfile.h sndfile.hh
-        PATHS ${LIBSNDFILE_PKGCONF_INCLUDE_DIRS}
-        )
+file(STRINGS "VERSION" VERSION)
 
-# Library
-find_library(LIBSNDFILE_LIBRARY
-        NAMES sndfile libsndfile-1
-        PATHS ${LIBSNDFILE_PKGCONF_LIBRARY_DIRS}
-        )
+string(REGEX MATCH "^([0-9]+)\\.([0-9]+)\\.([0-9]+)$" VERSION_PARTS ${VERSION})
 
-include(FindPkgConfig)
-find_package(PackageHandleStandardArgs)
-# find_package(adm)
-# find_package(bw64)
-find_package_handle_standard_args(LibSndFile  DEFAULT_MSG  LIBSNDFILE_LIBRARY LIBSNDFILE_INCLUDE_DIR)
+set(VERSION_MAJOR ${CMAKE_MATCH_1})
+set(VERSION_MINOR ${CMAKE_MATCH_2})
+set(VERSION_PATCH ${CMAKE_MATCH_3})
 
-# Include subdirectories only if you manually installed
-add_subdirectory(libs/libadm)
-add_subdirectory(libs/libbw64)
+message(STATUS "Building version ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+
+#----------------
+# Dependencies
+#----------------
+
+find_package(LibSndFile REQUIRED)
+if(LIBSNDFILE_FOUND)
+    message(STATUS "LIBSNDFILE_INCLUDE_DIRS='${LIBSNDFILE_INCLUDE_DIRS}'")
+    message(STATUS "LIBSNDFILE_LIBRARIES=${LIBSNDFILE_LIBRARIES}")
+    include_directories(${LIBSNDFILE_INCLUDE_DIRS})
+endif(LIBSNDFILE_FOUND)
+
+#find_package(adm)
+#if(ADM_FOUND)
+#    message(STATUS "ADM_INCLUDE_DIRS='${ADM_INCLUDE_DIRS}'")
+#    message(STATUS "ADM_LIBRARIES=${ADM_LIBRARIES}")
+#    include_directories(${ADM_INCLUDE_DIRS})
+#else()
+    # Include subdirectories only if you manually installed
+    add_subdirectory(libs/libadm)
+#endif()
+
+#find_package(bw64)
+#if(BW64_FOUND)
+#    message(STATUS "BW64_INCLUDE_DIRS='${BW64_INCLUDE_DIRS}'")
+#    message(STATUS "BW64_LIBRARIES=${BW64_LIBRARIES}")
+#    include_directories(${BW64_INCLUDE_DIRS})
+#else()
+    # Include subdirectories only if you manually installed
+    add_subdirectory(libs/libbw64)
+#endif()
+
+#----------------
+# Compiler flags
+#----------------
+
+set(COMMON_FLAGS "-Wall -Wextra -Wconversion -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -DBOOST_FILESYSTEM_NO_DEPRECATED")
+set(CMAKE_C_FLAGS ${COMMON_FLAGS})
+
+if(APPLE)
+    set(CMAKE_CXX_FLAGS "-stdlib=libc++ ${CMAKE_CXX_FLAGS}")
+endif()
+
+message(STATUS "CMAKE_CXX_COMPILER_VERSION='${CMAKE_CXX_COMPILER_VERSION}'")
+message(STATUS "CMAKE_CXX_FLAGS='${CMAKE_CXX_FLAGS}'")
+message(STATUS "CMAKE_CXX_FLAGS_DEBUG='${CMAKE_CXX_FLAGS_DEBUG}'")
+message(STATUS "CMAKE_CXX_FLAGS_RELEASE='${CMAKE_CXX_FLAGS_RELEASE}'")
+message(STATUS "CMAKE_CXX_COMPILE_OBJECT='${CMAKE_CXX_COMPILE_OBJECT}'")
+
+#----------------
+# Sources
+#----------------
 
 # collect and add source files
 set(SOURCES
@@ -75,59 +126,71 @@ set(SOURCES
   ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPFilters.cpp
   ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPDynamics.cpp
   ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPUtilities.cpp
-  )
+)
 
 # create the executable
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 
-if(LIBSNDFILE_FOUND)
-    set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIBRARY})
-    set(LIBSNDFILE_INCLUDE_DIRS ${LIBSNDFILE_INCLUDE_DIR})
-	mark_as_advanced(LIBSNDFILE_LIBRARY LIBSNDFILE_LIBRARIES LIBSNDFILE_INCLUDE_DIR LIBSNDFILE_INCLUDE_DIRS)
-	pkg_search_module(SndFile sndfile)
-else()
-	set(LIBSNDFILE_INCLUDE_DIR ./libs/libsndfile/include)
-    target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${LIBSNDFILE_INCLUDE_DIR})
-	set(LIBSNDFILE_INCLUDE_DIRS ${LIBSNDFILE_INCLUDE_DIR})
-	if(WIN32 OR MSVC)
-        target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/vs/\$(Platform)")
-		set(LIBSNDFILE_LIBRARY "sndfile.lib")
-	elseif(APPLE)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wc++11-extensions")
-        target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/osx")
-        set(LIBSNDFILE_LIBRARY "sndfile.a")
-	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-        link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/linux")
-        set(LIBSNDFILE_LIBRARY "sndfile.a")
-	endif()
-	set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIBRARY})
-endif(LIBSNDFILE_FOUND)
-
-# link libraries
-if(WIN32 OR MSVC)
-  add_definitions(-DM1_STATIC)
-  # Change `PATH` to reflect `/MT` or `/MD` as needed!
-  set(MACH1TRANSCODE_LIBRARY_DEBUG ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Debug/Mach1TranscodeCAPId.lib)
-  set(MACH1TRANSCODE_LIBRARY_RELEASE ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Release/Mach1TranscodeCAPI.lib)
-	set(MACH1TRANSCODE_LIBRARY debug ${MACH1TRANSCODE_LIBRARY_DEBUG} optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE debug ${MACH1TRANSCODE_LIBRARY_DEBUG})
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
-else()
-	find_library(MACH1TRANSCODE_LIBRARY
-		NAMES Mach1TranscodeCAPI libMach1TranscodeCAPI
-		HINTS ${MACH1SPATIAL_LIBS_PATH}/lib
-		)
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${MACH1TRANSCODE_LIBRARY})
-endif()
+#----------------
+# Link
+#----------------
 
 # include headers
 set(MACH1SPATIAL_INCLUDE_DIRS src libs ${MACH1SPATIAL_LIBS_PATH}/include)
 include_directories(${MACH1SPATIAL_INCLUDE_DIRS})
 include_directories(${LIBSNDFILE_INCLUDE_DIRS})
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LIBSNDFILE_LIBRARIES})
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE adm)
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE bw64)
+if(LIBSNDFILE_FOUND)
 
+else()
+    set(LIBSNDFILE_INCLUDE_DIR ./libs/libsndfile/include)
+    target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${LIBSNDFILE_INCLUDE_DIR})
+    set(LIBSNDFILE_INCLUDE_DIRS ${LIBSNDFILE_INCLUDE_DIR})
+    if(WIN32 OR MSVC)
+        target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/vs/\$(Platform)")
+        set(LIBSNDFILE_LIBRARY "sndfile.lib")
+    elseif(APPLE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wc++11-extensions")
+        target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/osx")
+        set(LIBSNDFILE_LIBRARY "sndfile.a")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+        link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/linux")
+        set(LIBSNDFILE_LIBRARY "sndfile.a")
+    endif()
+    set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIBRARY})
+endif(LIBSNDFILE_FOUND)
+
+# link libraries
+if(WIN32 OR MSVC)
+    add_definitions(-DM1_STATIC)
+    # Change `PATH` to reflect `/MT` or `/MD` as needed!
+    set(MACH1TRANSCODE_LIBRARY_DEBUG ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Debug/Mach1TranscodeCAPId.lib)
+    set(MACH1TRANSCODE_LIBRARY_RELEASE ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Release/Mach1TranscodeCAPI.lib)
+    set(MACH1TRANSCODE_LIBRARY debug ${MACH1TRANSCODE_LIBRARY_DEBUG} optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
+    set(MACH1TRANSCODE_LIBRARIES debug ${MACH1TRANSCODE_LIBRARY_DEBUG} optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
+else()
+    find_library(MACH1TRANSCODE_LIBRARY
+        NAMES Mach1TranscodeCAPI libMach1TranscodeCAPI
+        HINTS ${MACH1SPATIAL_LIBS_PATH}/lib
+    )
+    set(MACH1TRANSCODE_LIBRARIES ${MACH1TRANSCODE_LIBRARY})
+endif()
+
+set(
+    LIBS
+    ${LIBSNDFILE_LIBRARIES}
+    ${MACH1TRANSCODE_LIBRARIES}
+    adm
+    bw64
+)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LIBS})
+
+#----------------
+# Install
+#----------------
+
+message(STATUS "CMAKE_INSTALL_PREFIX='${CMAKE_INSTALL_PREFIX}'")
 install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION build)
+
+#-------------------------------------------------------------------------------
