@@ -18,6 +18,8 @@ find_package(LibFLAC REQUIRED)
 find_package(LibVorbis REQUIRED)
 find_package(LibOgg REQUIRED)
 find_package(LibOpus REQUIRED)
+find_package(LibMp3Lame REQUIRED)
+find_package(MPG123 REQUIRED)
 
 list(
     APPEND
@@ -26,6 +28,8 @@ list(
     ${LIBVORBIS_LIBRARIES}
     ${LIBOGG_LIBRARIES}
     ${LIBOPUS_LIBRARIES}
+    ${libmp3lame_LIBRARIES}
+    ${MPG123_LIBRARIES}
 )
 
 list(
@@ -35,6 +39,8 @@ list(
     ${LIBVORBIS_INCLUDE_DIRS}
     ${LIBOGG_INCLUDE_DIRS}
     ${LIBOPUS_INCLUDE_DIRS}
+    ${libmp3lame_INCLUDE_DIRS}
+    ${MPG123_INCLUDE_DIR}
 )
 
 find_package_handle_standard_args(

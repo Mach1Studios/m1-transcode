@@ -99,7 +99,7 @@ endif(LIBSNDFILE_FOUND)
 # Compiler flags
 #----------------
 
-set(COMMON_FLAGS "-Wall -Wextra -Wconversion -pedantic")
+set(COMMON_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -DBOOST_FILESYSTEM_NO_DEPRECATED")
 set(CMAKE_C_FLAGS ${COMMON_FLAGS})
 
