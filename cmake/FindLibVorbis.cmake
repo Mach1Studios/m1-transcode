@@ -1,13 +1,9 @@
-#-------------------------------------------------------------------------------
-#
 # Finds libvorbis and libvorbisenc include files and libraries. This module sets
 # the following variables:
 #
 #  LIBVORBIS_FOUND        - Flag if libvorbis was found
 #  LIBVORBIS_INCLUDE_DIRS - libvorbis include directories
 #  LIBVORBIS_LIBRARIES    - libvorbis and libvorbisenc library paths
-#
-#-------------------------------------------------------------------------------
 
 include(FindPackageHandleStandardArgs)
 
@@ -23,5 +19,3 @@ find_package_handle_standard_args(
     LIBVORBIS_LIBRARIES
     LIBVORBIS_INCLUDE_DIRS
 )
-
-#-------------------------------------------------------------------------------

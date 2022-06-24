@@ -1,13 +1,9 @@
-#-------------------------------------------------------------------------------
-#
 # Finds libflac include file and library. This module sets the following
 # variables:
 #
 #  LIBFLAC_FOUND        - Flag if libflac was found
 #  LIBFLAC_INCLUDE_DIRS - libflac include directories
 #  LIBFLAC_LIBRARIES    - libflac library paths
-#
-#-------------------------------------------------------------------------------
 
 include(FindPackageHandleStandardArgs)
 
@@ -20,5 +16,3 @@ find_package_handle_standard_args(
     LIBFLAC_LIBRARIES
     LIBFLAC_INCLUDE_DIRS
 )
-
-#-------------------------------------------------------------------------------

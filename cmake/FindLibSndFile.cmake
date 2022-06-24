@@ -1,13 +1,9 @@
-#-------------------------------------------------------------------------------
-#
 # Finds libsndfile include file and library. This module sets the following
 # variables:
 #
 #  LIBSNDFILE_FOUND        - Flag if libsndfile was found
 #  LIBSNDFILE_INCLUDE_DIRS - libsndfile include directories
 #  LIBSNDFILE_LIBRARIES    - libsndfile library paths
-#
-#-------------------------------------------------------------------------------
 
 include(FindPackageHandleStandardArgs)
 
@@ -18,7 +14,6 @@ find_package(LibFLAC REQUIRED)
 find_package(LibVorbis REQUIRED)
 find_package(LibOgg REQUIRED)
 find_package(LibOpus REQUIRED)
-find_package(LibMp3Lame REQUIRED)
 find_package(MPG123 REQUIRED)
 
 list(
@@ -28,7 +23,6 @@ list(
     ${LIBVORBIS_LIBRARIES}
     ${LIBOGG_LIBRARIES}
     ${LIBOPUS_LIBRARIES}
-    ${libmp3lame_LIBRARIES}
     ${MPG123_LIBRARIES}
 )
 
@@ -39,7 +33,6 @@ list(
     ${LIBVORBIS_INCLUDE_DIRS}
     ${LIBOGG_INCLUDE_DIRS}
     ${LIBOPUS_INCLUDE_DIRS}
-    ${libmp3lame_INCLUDE_DIRS}
     ${MPG123_INCLUDE_DIR}
 )
 
@@ -49,5 +42,3 @@ find_package_handle_standard_args(
     LIBSNDFILE_LIBRARIES
     LIBSNDFILE_INCLUDE_DIRS
 )
-
-#-------------------------------------------------------------------------------

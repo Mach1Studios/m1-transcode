@@ -1,13 +1,9 @@
-#-------------------------------------------------------------------------------
-#
 # Finds libopus include file and library. This module sets the following
 # variables:
 #
 #  LIBOPUS_FOUND        - Flag if libopus was found
 #  LIBOPUS_INCLUDE_DIRS - libopus include directory
 #  LIBOPUS_LIBRARIES    - libopus library path
-#
-#-------------------------------------------------------------------------------
 
 include(FindPackageHandleStandardArgs)
 
@@ -20,5 +16,3 @@ find_package_handle_standard_args(
     LIBOPUS_LIBRARIES
     LIBOPUS_INCLUDE_DIRS
 )
-
-#-------------------------------------------------------------------------------

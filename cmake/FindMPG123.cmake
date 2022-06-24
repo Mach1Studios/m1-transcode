@@ -1,5 +1,3 @@
-#-------------------------------------------------------------------------------
-#
 # Finds mpg123 include file and library. This module sets the following
 # variables:
 #
@@ -28,5 +26,3 @@ FIND_LIBRARY(MPG123_LIBRARIES NAMES mpg123 mpg123-0
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(MPG123 DEFAULT_MSG MPG123_LIBRARIES MPG123_INCLUDE_DIR)
-
-#-------------------------------------------------------------------------------
