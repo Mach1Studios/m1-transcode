@@ -11,10 +11,10 @@ REM   + M1SDK_PATH=
 REM   + M1TT_PATH=
 
 cd %M1TT_PATH%
-cmake . -B_builds/vs-15-2017 -G "Visual Studio 15 2017" -A Win32 -DCMAKE_INSTALL_PREFIX=`pwd`/_install/vs-15-2017
-cmake --build _builds/vs-15-2017 --config Release --target install -- /nologo /verbosity:minimal
-cmake . -B_builds/vs-15-2017-win64 -G "Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=`pwd`/_install/vs-15-2017-win64
-cmake --build _builds/vs-15-2017-win64 --config Release --target install -- /nologo /verbosity:minimal
+cmake . -B_builds/vs-15-2017 -G "Visual Studio 15 2017" -A Win32 -DCMAKE_INSTALL_PREFIX=_install/vs-15-2017
+cmake --build _builds/vs-15-2017 --config Release --target install -- /nologo /verbosity:quiet /clp:ErrorsOnly
+cmake . -B_builds/vs-15-2017-win64 -G "Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=_install/vs-15-2017-win64
+cmake --build _builds/vs-15-2017-win64 --config Release --target install -- /nologo /verbosity:quiet /clp:ErrorsOnly
 
 DEL /Q /F /S "m1-transcode-win-x64"
 DEL /Q /F /S "m1-transcode-win-x86"
