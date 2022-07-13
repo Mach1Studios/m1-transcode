@@ -2,7 +2,7 @@
 # Setup
 #----------------
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.1.0)
 project(m1-transcode)
 set(CMAKE_CXX_STANDARD 11)
 
@@ -141,7 +141,6 @@ include_directories(${MACH1SPATIAL_INCLUDE_DIRS})
 include_directories(${LIBSNDFILE_INCLUDE_DIRS})
 
 if(LIBSNDFILE_FOUND)
-
 else()
     set(LIBSNDFILE_INCLUDE_DIR ./libs/libsndfile/include)
     target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${LIBSNDFILE_INCLUDE_DIR})
