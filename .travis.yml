@@ -2,6 +2,7 @@ language: cpp
 env:
   global:
     - secure: xq88wTHbDzhUaA8KEVVLtiETOccPOShPlWdcuJIvsGRKSSLI8hSDhGR0ZFWrvpx56t6lgrqVrEOUqIoLLDM06mltNBpe+218lKs3wKnNuxET8MrZ6m05oC6n0uavXIgnxbC8mChYqeZHd2mQ0riGfPsxue9GIKsiq27WZvuB+AdoYE4HvuOrRPYN63EeiAhx4BnY31GlEGbiEd0zFsDmTI8lL3boCZ/P4aK/SYdCV3BfJ0VkqT+UNo2HWnOBJAR1A63cu0gznmLNG2gv1Wd9gxntbPKXaa2Qc/HtIqOab4Jyl+TIzh5582s+oPgIgX8349/0n1o5dNmjWu64j02LwynV87+aflyK8P9kYCdnJosPjjktEM4L8kWOpVrH+0Go8VDdLf3Ar9C0f1urQ27g+fCIMRO7xPN7sceLP1c2L7LNUp2wx2ItTovJhcZa1cb6OmXbVURsjRCum8WYXpkJ08Tu34roPX45avLMh2JCf7dzJ3EoUhnd43/o+E+Eme4Nes0fYMAQEKK881C9uQljcuYmKuJ/uOTvStP68fOYvc1xnb3RT/OpHvaX6dX5QKrBZnk0fVWMcLtxfT3lvdtt5u73gWcdu+kzBXdEtwpGajeSXlPdhUOzDukccatQrQt97eybFdUC/9C04FLQ4OlBNpS+VFELaBkfJsNq0ThPQFo=
+    - secure: 32uY13eznz7kgKhNOy60tZPNYbgaxtvoXy+3/EltgBD60gX+l9hmAfq+HiQPnQUxvrS7j2ShrGeJWlfRNpY2hWctDAgKst9DajDjOVH/qAqryYBqs4KnqJghqgQLhtf5eUH8cQtZ14cZHDjPpKhxfkqJb1LKPr+q/mqvmOQBwi1AMdhddMzJb0yPjj/FmHRq9a+TNHiLnoR3COy3XKX09nmnmVYCwcamswLzQqpexnLBfgPsVZ220nB5JerRya1OuXEp3b+rFvpt1t1vERrCQs5ULwomJT7TVA9tKlQlxJ0EjCPOOxgtFLMDcIRG2kttEH/QIXxOf1efCil6+Y5c2IgQ1BxWy3KDh44UMidNgzxyWQdqUQxhzX8Pt+k1wcoHAIlxBCr73ba+myMh0m9myf/FX4FYgi5WR4JTIyPMBLQlnhJtq7KUpVFGiLbHzEw6oaaTiyQV0HeEwuoJKZ/h5Oc/CHWfBwYAIrSbhzarqh6NU8reiRQkG0qrfyVGWWIskxie1zWFbPYcBehfFWAd0sWlvqZiRP0mF1+4Z7EPIM0eQeK871QIm7XualCKv+Bvs5na+UoNID2FCLURsmP0HUesy39JndpbFJXuvKm0bfMEqp0e1uvfGlWDfO5v2i4uXW4EbjYnEOCmKGgSUjXzt16+YFrfC9y5eYEel+kINuk=
 
 if: tag IS present
 
@@ -158,7 +159,6 @@ jobs:
       language: sh
       env:
         - VS15=true
-        - VCPKG_PATH=${TRAVIS_BUILD_DIR}/vcpkg
       cache:
         directories:
           - ${TRAVIS_BUILD_DIR}/vcpkg
@@ -169,16 +169,17 @@ jobs:
         - cd ${TRAVIS_BUILD_DIR}
         - ./vcpkg/bootstrap-vcpkg.bat
       install:
+        - cd ${TRAVIS_BUILD_DIR}
         - choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
         - choco install -y make
         - choco install -y awscli
         - choco install -y boost-msvc-14.1
         - choco install -y pkgconfiglite
         - export PATH="$(powershell -Command '("Process", "Machine" | % {[Environment]::GetEnvironmentVariable("PATH", $_) -Split ";" -Replace "\\$", ""} | Select -Unique | % { cygpath $_ }) -Join ":"')"
-        - cd ${VCPKG_PATH}
-        - ./vcpkg.exe install libogg:x64-windows-static libvorbis:x64-windows-static libflac:x64-windows-static opus:x64-windows-static libogg:x86-windows-static libvorbis:x86-windows-static libflac:x86-windows-static opus:x86-windows-static
-        - ./vcpkg.exe install mpg123x86-windows-static mpg123:x64-windows-static
-        - ./vcpkg.exe install sndfile:x86-windows-static sndfile:x64-windows-static
+        - cd ${TRAVIS_BUILD_DIR}/vcpkg
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libogg:x64-windows-static libvorbis:x64-windows-static libflac:x64-windows-static opus:x64-windows-static libogg:x86-windows-static libvorbis:x86-windows-static libflac:x86-windows-static opus:x86-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install mpg123x86-windows-static mpg123:x64-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install sndfile:x86-windows-static sndfile:x64-windows-static
         - cd ${TRAVIS_BUILD_DIR}/m1-transcode
         - ./scripts/setup.sh
       script:
@@ -298,9 +299,15 @@ jobs:
 
 before_deploy: 
   - cd ${TRAVIS_BUILD_DIR}
+  - git config user.email "whatsup@mach1.tech"
+  - git config user.name "Mach1-Bot"
+  - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+  - git tag $TRAVIS_TAG
 
 deploy:
   provider: releases
+  api_key:
+    secure: xq88wTHbDzhUaA8KEVVLtiETOccPOShPlWdcuJIvsGRKSSLI8hSDhGR0ZFWrvpx56t6lgrqVrEOUqIoLLDM06mltNBpe+218lKs3wKnNuxET8MrZ6m05oC6n0uavXIgnxbC8mChYqeZHd2mQ0riGfPsxue9GIKsiq27WZvuB+AdoYE4HvuOrRPYN63EeiAhx4BnY31GlEGbiEd0zFsDmTI8lL3boCZ/P4aK/SYdCV3BfJ0VkqT+UNo2HWnOBJAR1A63cu0gznmLNG2gv1Wd9gxntbPKXaa2Qc/HtIqOab4Jyl+TIzh5582s+oPgIgX8349/0n1o5dNmjWu64j02LwynV87+aflyK8P9kYCdnJosPjjktEM4L8kWOpVrH+0Go8VDdLf3Ar9C0f1urQ27g+fCIMRO7xPN7sceLP1c2L7LNUp2wx2ItTovJhcZa1cb6OmXbVURsjRCum8WYXpkJ08Tu34roPX45avLMh2JCf7dzJ3EoUhnd43/o+E+Eme4Nes0fYMAQEKK881C9uQljcuYmKuJ/uOTvStP68fOYvc1xnb3RT/OpHvaX6dX5QKrBZnk0fVWMcLtxfT3lvdtt5u73gWcdu+kzBXdEtwpGajeSXlPdhUOzDukccatQrQt97eybFdUC/9C04FLQ4OlBNpS+VFELaBkfJsNq0ThPQFo=
   file_glob: true
   file: build/*
   skip_cleanup: true
