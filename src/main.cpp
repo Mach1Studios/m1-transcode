@@ -100,11 +100,11 @@ void printHelp() {
 	std::cout << "  -write-metadata       - write channel-bed ADM metadata for supported formats" << std::endl;
 	std::cout << std::endl;
 	std::cout << "  Formats Supported:" << std::endl;
-    std::cout << "    M1Horizon (Mach1 Horizon / Quad) - L R Ls Rs" << std::endl;
-	std::cout << "    M1Horizon+S (Mach1 Horizon / Quad) - L R Ls Rs StereoL StereoR" << std::endl;
+    std::cout << "    M1Spatial-4 (Mach1 Horizon / Quad) - L R Ls Rs" << std::endl;
+	std::cout << "    M1Spatial-4+S (Mach1 Horizon / Quad) - L R Ls Rs StereoL StereoR" << std::endl;
 	std::cout << "    M1HorizonPairs (Mach1 Horizon / Quad-Binaural) - FrontPair, LeftPair, RearPair, RightPair" << std::endl;
-	std::cout << "    M1Spatial (Mach1 Spatial) - Upper L R Ls Rs, Lower L R Ls Rs" << std::endl;
-	std::cout << "    M1Spatial+S (Mach1 Spatial) - Upper L R Ls Rs, Lower L R Ls Rs, StereoL StereoR" << std::endl;
+	std::cout << "    M1Spatial-8 (Mach1 Spatial) - Upper L R Ls Rs, Lower L R Ls Rs" << std::endl;
+	std::cout << "    M1Spatial-8+S (Mach1 Spatial) - Upper L R Ls Rs, Lower L R Ls Rs, StereoL StereoR" << std::endl;
 	std::cout << "    M1SpatialPairs (Mach1 Spatial Pairs) - Upper front, left, rear, right, pairs, then lower same" << std::endl;
 	std::cout << "    M1SpatialFaces - Fc, Lc, Rc, Bc, Tc, Bc" << std::endl;
     std::cout << "    2.0_M                              - L & R spatialized" << std::endl;
