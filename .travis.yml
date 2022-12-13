@@ -1,18 +1,31 @@
 language: cpp
 env:
   global:
-    - secure: xq88wTHbDzhUaA8KEVVLtiETOccPOShPlWdcuJIvsGRKSSLI8hSDhGR0ZFWrvpx56t6lgrqVrEOUqIoLLDM06mltNBpe+218lKs3wKnNuxET8MrZ6m05oC6n0uavXIgnxbC8mChYqeZHd2mQ0riGfPsxue9GIKsiq27WZvuB+AdoYE4HvuOrRPYN63EeiAhx4BnY31GlEGbiEd0zFsDmTI8lL3boCZ/P4aK/SYdCV3BfJ0VkqT+UNo2HWnOBJAR1A63cu0gznmLNG2gv1Wd9gxntbPKXaa2Qc/HtIqOab4Jyl+TIzh5582s+oPgIgX8349/0n1o5dNmjWu64j02LwynV87+aflyK8P9kYCdnJosPjjktEM4L8kWOpVrH+0Go8VDdLf3Ar9C0f1urQ27g+fCIMRO7xPN7sceLP1c2L7LNUp2wx2ItTovJhcZa1cb6OmXbVURsjRCum8WYXpkJ08Tu34roPX45avLMh2JCf7dzJ3EoUhnd43/o+E+Eme4Nes0fYMAQEKK881C9uQljcuYmKuJ/uOTvStP68fOYvc1xnb3RT/OpHvaX6dX5QKrBZnk0fVWMcLtxfT3lvdtt5u73gWcdu+kzBXdEtwpGajeSXlPdhUOzDukccatQrQt97eybFdUC/9C04FLQ4OlBNpS+VFELaBkfJsNq0ThPQFo=
-    - secure: 32uY13eznz7kgKhNOy60tZPNYbgaxtvoXy+3/EltgBD60gX+l9hmAfq+HiQPnQUxvrS7j2ShrGeJWlfRNpY2hWctDAgKst9DajDjOVH/qAqryYBqs4KnqJghqgQLhtf5eUH8cQtZ14cZHDjPpKhxfkqJb1LKPr+q/mqvmOQBwi1AMdhddMzJb0yPjj/FmHRq9a+TNHiLnoR3COy3XKX09nmnmVYCwcamswLzQqpexnLBfgPsVZ220nB5JerRya1OuXEp3b+rFvpt1t1vERrCQs5ULwomJT7TVA9tKlQlxJ0EjCPOOxgtFLMDcIRG2kttEH/QIXxOf1efCil6+Y5c2IgQ1BxWy3KDh44UMidNgzxyWQdqUQxhzX8Pt+k1wcoHAIlxBCr73ba+myMh0m9myf/FX4FYgi5WR4JTIyPMBLQlnhJtq7KUpVFGiLbHzEw6oaaTiyQV0HeEwuoJKZ/h5Oc/CHWfBwYAIrSbhzarqh6NU8reiRQkG0qrfyVGWWIskxie1zWFbPYcBehfFWAd0sWlvqZiRP0mF1+4Z7EPIM0eQeK871QIm7XualCKv+Bvs5na+UoNID2FCLURsmP0HUesy39JndpbFJXuvKm0bfMEqp0e1uvfGlWDfO5v2i4uXW4EbjYnEOCmKGgSUjXzt16+YFrfC9y5eYEel+kINuk=
+    - secure: pQuG5nGUf30xNXDZazPsewC/FyCwO41zsRUwUvG1+k3uqVUWe3QQLKV8wlwFelECw7X6blWbSMyvqMr5k96Vysk++nGT9yam0zTeRd9AFF/B3fuOnihrLMiS7taIU8P0NE3cB0AvkjHzpiMXpA01lKfzWA6dlcv5ETXowXuCGq1A2yH0iuK5bst3xqjUx/cg369nxFad2CHLOs77a238yrgsMUNPEMwYlz1eSLzLV1Cukrqu1zz7KyVnOrP9kQM5A/UELH/eAYP5FftFmzRjClgBrfY2olCB8dKynU6dnCzElSApAGhd/fbLiHubgf00kbowk4HDMb7PmgoGhzv3IqxMdX672lMEknRGQFsJ/Vr3HZMkSQQfVFxAXcCHPZyaYqgblZqb0bFFl4YXHcsf74z2i7vn5eamdXGmzo2BhSHSOKKnPBPzPl49vy9JgsOK6r92hsQCUvG+ydjPsrYHwKNfJRwuGSFPklUxJOGweu7po9eaQ3g4+PIkF5L0/4loNw1K/UFixGNLAYIVwiu3abySKRkV22cIniIaD7MynUrQo3vRL8THQbml/vZCud8tPKcGDZfrk+QO1d13uQYYawK9TaJ7Vxht8RN/v/LC+clWiRVTT36OViDiUZWp6FlPhR7vLhY0oQqsJi82U+qbyuO/vXPq9QTeC6FdaNsbCs4=
 
 if: tag IS present
 
 git:
   lfs_skip_smudge: true
-  depth: 5
+  depth: 2
 
 before_install:
   - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - eval "${MATRIX_EVAL}"
+
+install:
+  - pushd ${TRAVIS_BUILD_DIR}
+  - if [ -d "${TRAVIS_BUILD_DIR}/vcpkg/.git" ] ; then echo vcpkg cached ; else rm -rf vcpkg ; git clone https://github.com/Microsoft/vcpkg ; fi
+  - cd vcpkg
+  - git checkout .
+  - git pull
+  - if [ "${USE_VCPKG}" = true ] ; then ./bootstrap-vcpkg.sh ; fi
+  - if [ "${USE_VCPKG}" = true ] ; then echo "set(VCPKG_BUILD_TYPE release)" >> triplets/x64-osx.cmake ; fi
+  - if [ "${USE_VCPKG}" = true ] ; then echo "set(VCPKG_BUILD_TYPE release)" >> triplets/x64-linux.cmake ; fi
+  - if [ "${USE_VCPKG}" = true ] ; then rm -rf buildtrees; fi
+  - if [ "${USE_VCPKG}" = true ] ; then rm -rf installed; fi
+  - if [ "${USE_VCPKG}" = true ] ; then rm -rf packages; fi
+  - popd
 
 stages:
   - name: build
@@ -49,27 +62,7 @@ jobs:
         - cmake --build . --config Release
       after_success:
         - cd ${TRAVIS_BUILD_DIR}
-        - mkdir build
-        - mkdir -p m1-transcode-linux-x64/license/attribution
-        - cp ${TRAVIS_BUILD_DIR}/m1-transcode ${TRAVIS_BUILD_DIR}/m1-transcode-linux-x64/m1-transcode
-        - cd m1-transcode-linux-x64/license
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/LICENSE.txt
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf
-        - cd attribution
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1-EndUserLicenseAgreement-General.pdf
-        - mkdir 01_LOGOMARK_SYMBOL
-        - mkdir 02B_LOGO_POWEREDBY
-        - mkdir 02_LOGO_LOCKUPS
-        - cd 01_LOGOMARK_SYMBOL
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_WHT.eps
-        - cd ../02B_LOGO_POWEREDBY
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_WHT.eps
-        - cd ../02_LOGO_LOCKUPS
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_WHT.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_VERT_EPS_WHT.eps
+        - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} linux-x64 m1-transcode
         - cd ${TRAVIS_BUILD_DIR}
         - find m1-transcode-linux-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-linux-x64.zip -@
         - cp m1-transcode-linux-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-linux-x64.zip
@@ -126,27 +119,7 @@ jobs:
         - cmake --build . --config Release
       after_success:
         - cd ${TRAVIS_BUILD_DIR}
-        - mkdir build
-        - mkdir -p m1-transcode-linux-arm/license/attribution
-        - cp ${TRAVIS_BUILD_DIR}/m1-transcode ${TRAVIS_BUILD_DIR}/m1-transcode-linux-arm/m1-transcode
-        - cd m1-transcode-linux-arm/license
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/LICENSE.txt
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf
-        - cd attribution
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1-EndUserLicenseAgreement-General.pdf
-        - mkdir 01_LOGOMARK_SYMBOL
-        - mkdir 02B_LOGO_POWEREDBY
-        - mkdir 02_LOGO_LOCKUPS
-        - cd 01_LOGOMARK_SYMBOL
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_WHT.eps
-        - cd ../02B_LOGO_POWEREDBY
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_WHT.eps
-        - cd ../02_LOGO_LOCKUPS
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_WHT.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_VERT_EPS_WHT.eps
+        - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} linux-arm m1-transcode
         - cd ${TRAVIS_BUILD_DIR}
         - find m1-transcode-linux-arm -path '*/.*' -prune -o -type f -print | zip m1-transcode-linux-arm.zip -@
         - cp m1-transcode-linux-arm.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-linux-arm.zip
@@ -156,16 +129,16 @@ jobs:
       os: windows
       language: sh
       env:
-        - VS15=true
+        - USE_VCPKG=true
+        - VCPKG_ROOT="${TRAVIS_BUILD_DIR}/vcpkg"
+        - VCPKG_DEFINES="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
       cache:
+        timeout: 1000
         directories:
           - ${TRAVIS_BUILD_DIR}/vcpkg
+          - ${TRAVIS_BUILD_DIR}/.cache/vcpkg
       git:
         submodules: false
-      before_cache:
-        - git clone https://github.com/Microsoft/vcpkg.git ${TRAVIS_BUILD_DIR}/vcpkg
-        - cd ${TRAVIS_BUILD_DIR}
-        - ./vcpkg/bootstrap-vcpkg.bat
       install:
         - cd ${TRAVIS_BUILD_DIR}
         - choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
@@ -174,10 +147,16 @@ jobs:
         - choco install -y boost-msvc-14.1
         - choco install -y pkgconfiglite
         - export PATH="$(powershell -Command '("Process", "Machine" | % {[Environment]::GetEnvironmentVariable("PATH", $_) -Split ";" -Replace "\\$", ""} | Select -Unique | % { cygpath $_ }) -Join ":"')"
-        - cd ${TRAVIS_BUILD_DIR}/vcpkg
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libogg:x64-windows-static libvorbis:x64-windows-static libflac:x64-windows-static opus:x64-windows-static libogg:x86-windows-static libvorbis:x86-windows-static libflac:x86-windows-static opus:x86-windows-static
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install mpg123x86-windows-static mpg123:x64-windows-static
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install sndfile:x86-windows-static sndfile:x64-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libflac --triplet x86-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libflac --triplet x64-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libvorbis --triplet x86-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libvorbis --triplet x64-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libogg --triplet x86-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libogg --triplet x64-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install opus --triplet x86-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install opus --triplet x64-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install mpg123 --triplet x86-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install mpg123 --triplet x64-windows-static
         - cd ${TRAVIS_BUILD_DIR}/m1-transcode
         - ./scripts/setup.sh
       script:
@@ -188,54 +167,13 @@ jobs:
         - cmake --build _builds/vs-15-2017-win64 --config Release --target install -- //nologo //verbosity:quiet //clp:ErrorsOnly
       after_success:
         - cd ${TRAVIS_BUILD_DIR}
-        - mkdir build
         # zip up win-x64
-        - mkdir -p m1-transcode-win-x64/license/attribution
-        - cp ${TRAVIS_BUILD_DIR}/_install\vs-15-2017-win64\bin\m1-transcode.exe ${TRAVIS_BUILD_DIR}/m1-transcode-win-x64/m1-transcode.exe
-        - cd m1-transcode-win-x64/license
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/LICENSE.txt
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf
-        - cd attribution
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1-EndUserLicenseAgreement-General.pdf
-        - mkdir 01_LOGOMARK_SYMBOL
-        - mkdir 02B_LOGO_POWEREDBY
-        - mkdir 02_LOGO_LOCKUPS
-        - cd 01_LOGOMARK_SYMBOL
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_WHT.eps
-        - cd ../02B_LOGO_POWEREDBY
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_WHT.eps
-        - cd ../02_LOGO_LOCKUPS
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_WHT.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_VERT_EPS_WHT.eps
-        - cd ${TRAVIS_BUILD_DIR}
+        - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} win-x64 _install\vs-15-2017-win64\bin\m1-transcode.exe
         - find m1-transcode-win-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-win-x64.zip -@
         - cp m1-transcode-win-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-win-x64.zip
         # zip up win-x86
         - cd ${TRAVIS_BUILD_DIR}
-        - mkdir -p m1-transcode-win-x86/license/attribution
-        - cp ${TRAVIS_BUILD_DIR}/_install\vs-15-2017\bin\m1-transcode.exe ${TRAVIS_BUILD_DIR}/m1-transcode-win-x86/m1-transcode.exe
-        - cd m1-transcode-win-x86/license
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/LICENSE.txt
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf
-        - cd attribution
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1-EndUserLicenseAgreement-General.pdf
-        - mkdir 01_LOGOMARK_SYMBOL
-        - mkdir 02B_LOGO_POWEREDBY
-        - mkdir 02_LOGO_LOCKUPS
-        - cd 01_LOGOMARK_SYMBOL
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_WHT.eps
-        - cd ../02B_LOGO_POWEREDBY
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_WHT.eps
-        - cd ../02_LOGO_LOCKUPS
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_WHT.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_VERT_EPS_WHT.eps
-        - cd ${TRAVIS_BUILD_DIR}
+        - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} win-x86 _install\vs-15-2017\bin\m1-transcode.exe
         - find m1-transcode-win-x86 -path '*/.*' -prune -o -type f -print | zip m1-transcode-win-x86.zip -@
         - cp m1-transcode-win-x86.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-win-x86.zip
 
@@ -245,6 +183,9 @@ jobs:
       addons:
         homebrew:
           packages:
+            - libvorbis
+            - libogg
+            - flac
             - opus-tools
             - mpg123
             - libpthread-stubs
@@ -257,7 +198,7 @@ jobs:
       osx_image: xcode13.2
       cache:
         directories:
-          - $HOME/Library/Caches/Homebrew
+          - ${TRAVIS_BUILD_DIR}/Library/Caches/Homebrew
       before_cache:
         - brew cleanup
       git:
@@ -269,28 +210,7 @@ jobs:
         - cmake --build . --config Release
       after_success:
         - cd ${TRAVIS_BUILD_DIR}
-        - mkdir build
-        - mkdir -p m1-transcode-osx-x64/license/attribution
-        - cp ${TRAVIS_BUILD_DIR}/m1-transcode ${TRAVIS_BUILD_DIR}/m1-transcode-osx-x64/m1-transcode
-        - cd m1-transcode-osx-x64/license
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/LICENSE.txt
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1SpatialSDK-RoyaltyFreeLicense.pdf
-        - cd attribution
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/Mach1-EndUserLicenseAgreement-General.pdf
-        - mkdir 01_LOGOMARK_SYMBOL
-        - mkdir 02B_LOGO_POWEREDBY
-        - mkdir 02_LOGO_LOCKUPS
-        - cd 01_LOGOMARK_SYMBOL
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/01_LOGOMARK_SYMBOL/MACH1_LOGO_SYMBOL_EPS_WHT.eps
-        - cd ../02B_LOGO_POWEREDBY
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02B_LOGO_POWEREDBY/MACH1_LOGO_HORZ_PB2_EPS_WHT.eps
-        - cd ../02_LOGO_LOCKUPS
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_BLK.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_HORZ_EPS_WHT.eps
-        - wget --quiet https://github.com/Mach1Studios/m1-sdk/raw/master/license/attribution/02_LOGO_LOCKUPS/MACH1_LOGO_LOCKUP_VERT_EPS_WHT.eps
-        - cd ${TRAVIS_BUILD_DIR}
+        - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} osx-x64 m1-transcode
         - find m1-transcode-osx-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-osx-x64.zip -@
         - cp m1-transcode-osx-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-osx-x64.zip
 
@@ -302,9 +222,7 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: xq88wTHbDzhUaA8KEVVLtiETOccPOShPlWdcuJIvsGRKSSLI8hSDhGR0ZFWrvpx56t6lgrqVrEOUqIoLLDM06mltNBpe+218lKs3wKnNuxET8MrZ6m05oC6n0uavXIgnxbC8mChYqeZHd2mQ0riGfPsxue9GIKsiq27WZvuB+AdoYE4HvuOrRPYN63EeiAhx4BnY31GlEGbiEd0zFsDmTI8lL3boCZ/P4aK/SYdCV3BfJ0VkqT+UNo2HWnOBJAR1A63cu0gznmLNG2gv1Wd9gxntbPKXaa2Qc/HtIqOab4Jyl+TIzh5582s+oPgIgX8349/0n1o5dNmjWu64j02LwynV87+aflyK8P9kYCdnJosPjjktEM4L8kWOpVrH+0Go8VDdLf3Ar9C0f1urQ27g+fCIMRO7xPN7sceLP1c2L7LNUp2wx2ItTovJhcZa1cb6OmXbVURsjRCum8WYXpkJ08Tu34roPX45avLMh2JCf7dzJ3EoUhnd43/o+E+Eme4Nes0fYMAQEKK881C9uQljcuYmKuJ/uOTvStP68fOYvc1xnb3RT/OpHvaX6dX5QKrBZnk0fVWMcLtxfT3lvdtt5u73gWcdu+kzBXdEtwpGajeSXlPdhUOzDukccatQrQt97eybFdUC/9C04FLQ4OlBNpS+VFELaBkfJsNq0ThPQFo=
+    secure: pQuG5nGUf30xNXDZazPsewC/FyCwO41zsRUwUvG1+k3uqVUWe3QQLKV8wlwFelECw7X6blWbSMyvqMr5k96Vysk++nGT9yam0zTeRd9AFF/B3fuOnihrLMiS7taIU8P0NE3cB0AvkjHzpiMXpA01lKfzWA6dlcv5ETXowXuCGq1A2yH0iuK5bst3xqjUx/cg369nxFad2CHLOs77a238yrgsMUNPEMwYlz1eSLzLV1Cukrqu1zz7KyVnOrP9kQM5A/UELH/eAYP5FftFmzRjClgBrfY2olCB8dKynU6dnCzElSApAGhd/fbLiHubgf00kbowk4HDMb7PmgoGhzv3IqxMdX672lMEknRGQFsJ/Vr3HZMkSQQfVFxAXcCHPZyaYqgblZqb0bFFl4YXHcsf74z2i7vn5eamdXGmzo2BhSHSOKKnPBPzPl49vy9JgsOK6r92hsQCUvG+ydjPsrYHwKNfJRwuGSFPklUxJOGweu7po9eaQ3g4+PIkF5L0/4loNw1K/UFixGNLAYIVwiu3abySKRkV22cIniIaD7MynUrQo3vRL8THQbml/vZCud8tPKcGDZfrk+QO1d13uQYYawK9TaJ7Vxht8RN/v/LC+clWiRVTT36OViDiUZWp6FlPhR7vLhY0oQqsJi82U+qbyuO/vXPq9QTeC6FdaNsbCs4=
   file_glob: true
   file: build/*
   skip_cleanup: true
-  on:
-    tags: true
