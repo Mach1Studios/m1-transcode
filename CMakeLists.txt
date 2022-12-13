@@ -2,7 +2,7 @@
 # Setup
 #----------------
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required (VERSION 3.1..3.18)
 project(m1-transcode)
 set(CMAKE_CXX_STANDARD 11)
 
@@ -68,12 +68,15 @@ message(STATUS "Building version ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PAT
 # Dependencies
 #----------------
 
-find_package(LibSndFile REQUIRED)
-if(LIBSNDFILE_FOUND)
-    message(STATUS "LIBSNDFILE_INCLUDE_DIRS='${LIBSNDFILE_INCLUDE_DIRS}'")
-    message(STATUS "LIBSNDFILE_LIBRARIES=${LIBSNDFILE_LIBRARIES}")
-    include_directories(${LIBSNDFILE_INCLUDE_DIRS})
-endif(LIBSNDFILE_FOUND)
+#find_package(SndFile REQUIRED)
+#if(LIBSNDFILE_FOUND)
+#    message(STATUS "LIBSNDFILE_INCLUDE_DIRS='${LIBSNDFILE_INCLUDE_DIRS}'")
+#    message(STATUS "LIBSNDFILE_LIBRARIES=${LIBSNDFILE_LIBRARIES}")
+#    include_directories(${LIBSNDFILE_INCLUDE_DIRS})
+#else()
+    # Include subdirectories only if you manually installed them
+    add_subdirectory(libs/libsndfile)
+#endif(LIBSNDFILE_FOUND)
 
 #find_package(adm)
 #if(ADM_FOUND)
@@ -81,7 +84,7 @@ endif(LIBSNDFILE_FOUND)
 #    message(STATUS "ADM_LIBRARIES=${ADM_LIBRARIES}")
 #    include_directories(${ADM_INCLUDE_DIRS})
 #else()
-    # Include subdirectories only if you manually installed
+    # Include subdirectories only if you manually installed them
     add_subdirectory(libs/libadm)
 #endif()
 
@@ -91,7 +94,7 @@ endif(LIBSNDFILE_FOUND)
 #    message(STATUS "BW64_LIBRARIES=${BW64_LIBRARIES}")
 #    include_directories(${BW64_INCLUDE_DIRS})
 #else()
-    # Include subdirectories only if you manually installed
+    # Include subdirectories only if you manually installed them
     add_subdirectory(libs/libbw64)
 #endif()
 
@@ -140,25 +143,25 @@ set(MACH1SPATIAL_INCLUDE_DIRS src libs ${MACH1SPATIAL_LIBS_PATH}/include)
 include_directories(${MACH1SPATIAL_INCLUDE_DIRS})
 include_directories(${LIBSNDFILE_INCLUDE_DIRS})
 
-if(LIBSNDFILE_FOUND)
-else()
-    set(LIBSNDFILE_INCLUDE_DIR ./libs/libsndfile/include)
-    target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${LIBSNDFILE_INCLUDE_DIR})
-    set(LIBSNDFILE_INCLUDE_DIRS ${LIBSNDFILE_INCLUDE_DIR})
-    if(WIN32 OR MSVC)
-        target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/vs/\$(Platform)")
-        set(LIBSNDFILE_LIBRARY "sndfile.lib")
-    elseif(APPLE)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wc++11-extensions")
-        target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/osx")
-        set(LIBSNDFILE_LIBRARY "sndfile.a")
-    else()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-        link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/linux")
-        set(LIBSNDFILE_LIBRARY "sndfile.a")
-    endif()
-    set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIBRARY})
-endif(LIBSNDFILE_FOUND)
+#if(LIBSNDFILE_FOUND)
+#else()
+#    set(LIBSNDFILE_INCLUDE_DIR ./libs/libsndfile/include)
+#    target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${LIBSNDFILE_INCLUDE_DIR})
+#    set(LIBSNDFILE_INCLUDE_DIRS ${LIBSNDFILE_INCLUDE_DIR})
+#    if(WIN32 OR MSVC)
+#        target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/vs/\$(Platform)")
+#        set(LIBSNDFILE_LIBRARY "sndfile.lib")
+#    elseif(APPLE)
+#        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wc++11-extensions")
+#        target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/osx")
+#        set(LIBSNDFILE_LIBRARY "sndfile.a")
+#    else()
+#        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+#        link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/linux")
+#        set(LIBSNDFILE_LIBRARY "sndfile.a")
+#    endif()
+#    set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIBRARY})
+#endif(LIBSNDFILE_FOUND)
 
 # link libraries
 if(WIN32 OR MSVC)
@@ -178,8 +181,9 @@ endif()
 
 set(
     LIBS
-    ${LIBSNDFILE_LIBRARIES}
+#    ${LIBSNDFILE_LIBRARIES}
     ${MACH1TRANSCODE_LIBRARIES}
+    sndfile
     adm
     bw64
 )
