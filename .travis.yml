@@ -65,7 +65,7 @@ jobs:
         - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} linux-x64 m1-transcode
         - cd ${TRAVIS_BUILD_DIR}
         - find m1-transcode-linux-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-linux-x64.zip -@
-        - cp m1-transcode-linux-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-linux-x64.zip
+        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-linux-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-linux-x64.zip
 
     - stage: build
       name: m1-transcode Linux-ARM64
@@ -122,7 +122,7 @@ jobs:
         - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} linux-arm m1-transcode
         - cd ${TRAVIS_BUILD_DIR}
         - find m1-transcode-linux-arm -path '*/.*' -prune -o -type f -print | zip m1-transcode-linux-arm.zip -@
-        - cp m1-transcode-linux-arm.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-linux-arm.zip
+        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-linux-arm.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-linux-arm.zip
 
     - stage: build
       name: m1-transcode Windows
@@ -132,11 +132,6 @@ jobs:
         - USE_VCPKG=true
         - VCPKG_ROOT="${TRAVIS_BUILD_DIR}/vcpkg"
         - VCPKG_DEFINES="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-      cache:
-        timeout: 1000
-        directories:
-          - ${TRAVIS_BUILD_DIR}/vcpkg
-          - ${TRAVIS_BUILD_DIR}/.cache/vcpkg
       git:
         submodules: false
       install:
@@ -147,16 +142,7 @@ jobs:
         - choco install -y boost-msvc-14.1
         - choco install -y pkgconfiglite
         - export PATH="$(powershell -Command '("Process", "Machine" | % {[Environment]::GetEnvironmentVariable("PATH", $_) -Split ";" -Replace "\\$", ""} | Select -Unique | % { cygpath $_ }) -Join ":"')"
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libflac --triplet x86-windows-static
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libflac --triplet x64-windows-static
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libvorbis --triplet x86-windows-static
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libvorbis --triplet x64-windows-static
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libogg --triplet x86-windows-static
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libogg --triplet x64-windows-static
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install opus --triplet x86-windows-static
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install opus --triplet x64-windows-static
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install mpg123 --triplet x86-windows-static
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install mpg123 --triplet x64-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libvorbis:x64-windows-static libflac:x64-windows-static opus:x64-windows-static mp3lame:x86-windows-static mpg123:x86-windows-static libvorbis:x86-windows-static libflac:x86-windows-static opus:x86-windows-static mp3lame:x86-windows-static mpg123:x86-windows-static
         - cd ${TRAVIS_BUILD_DIR}/m1-transcode
         - ./scripts/setup.sh
       script:
@@ -175,7 +161,7 @@ jobs:
         - cd ${TRAVIS_BUILD_DIR}
         - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} win-x86 _install\vs-15-2017\bin\m1-transcode.exe
         - find m1-transcode-win-x86 -path '*/.*' -prune -o -type f -print | zip m1-transcode-win-x86.zip -@
-        - cp m1-transcode-win-x86.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-win-x86.zip
+        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-win-x86.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-win-x86.zip
 
     - stage: build
       name: m1-transcode macOS
@@ -212,7 +198,7 @@ jobs:
         - cd ${TRAVIS_BUILD_DIR}
         - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} osx-x64 m1-transcode
         - find m1-transcode-osx-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-osx-x64.zip -@
-        - cp m1-transcode-osx-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-osx-x64.zip
+        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-osx-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-osx-x64.zip
 
 before_deploy: 
   - cd ${TRAVIS_BUILD_DIR}
@@ -226,3 +212,5 @@ deploy:
   file_glob: true
   file: build/*
   skip_cleanup: true
+  on:
+    branches: main
