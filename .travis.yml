@@ -34,11 +34,15 @@ jobs:
           packages:
             - build-essential
             - g++-7
+            - libasound2-dev
+            - libvorbis-dev
+            - libflac-dev
             - libopus-dev
+            - libogg-dev
             - libmpg123-dev
+            - libmp3lame-dev
+            - libtool
             - libpthread-stubs0-dev
-            - rsync
-            - awscli
             - libboost-all-dev
             - cmake
           update: true
@@ -74,11 +78,15 @@ jobs:
             - ubuntu-toolchain-r-test
           packages:
             - build-essential
+            - libasound2-dev
+            - libvorbis-dev
+            - libflac-dev
             - libopus-dev
+            - libogg-dev
             - libmpg123-dev
+            - libmp3lame-dev
+            - libtool
             - libpthread-stubs0-dev
-            - rsync
-            - awscli
             - gcc-arm-linux-gnueabi
             - binutils
             - patch
@@ -146,11 +154,10 @@ jobs:
         - cd ${TRAVIS_BUILD_DIR}
         - choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
         - choco install -y make
-        - choco install -y awscli
         - choco install -y boost-msvc-14.1
         - choco install -y pkgconfiglite
         - export PATH="$(powershell -Command '("Process", "Machine" | % {[Environment]::GetEnvironmentVariable("PATH", $_) -Split ";" -Replace "\\$", ""} | Select -Unique | % { cygpath $_ }) -Join ":"')"
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libvorbis:x64-windows libvorbis:x64-windows-static libvorbis:x86-windows libflac:x64-windows libflac:x64-windows-static libflac:x86-windows opus:x64-windows opus:x64-windows-static opus:x86-windows mp3lame:x64-windows mp3lame:x64-windows-static mp3lame:x86-windows mpg123:x64-windows mpg123:x64-windows-static mpg123:x86-windows        - cd ${TRAVIS_BUILD_DIR}
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libvorbis:x64-windows libvorbis:x64-windows-static libvorbis:x86-windows libflac:x64-windows libflac:x64-windows-static libflac:x86-windows opus:x64-windows opus:x64-windows-static opus:x86-windows mp3lame:x64-windows mp3lame:x64-windows-static mp3lame:x86-windows mpg123:x64-windows mpg123:x64-windows-static mpg123:x86-windows
         - cd ${TRAVIS_BUILD_DIR}
         - ./scripts/setup.sh
       script:
@@ -184,10 +191,9 @@ jobs:
             - flac
             - opus-tools
             - mpg123
+            - lame
+            - libtool
             - libpthread-stubs
-            - git-lfs
-            - rsync
-            - awscli
       env:
         - HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
         - HOMEBREW_NO_AUTO_UPDATE=1
@@ -222,6 +228,7 @@ deploy:
   provider: releases
   api_key:
     secure: Mpm1P5Wtvhe65sF4NeB1K5C07ogF2gn355qaKhy6Lw2FT9mQPRjB+DKgkxNPClw34nQ8+ckPcJwTM/g0l0LQCmiRS42MfyA8D946nkzjXOFRRFYE4rOG/4DcBM9+l/1OCGi7mso44yZIf1OMoQ2Ow7zeLKMNw4PWxEypnik8Pl5/oW8L5ZsJFsEv/fqGDcEu1LigQg7CVQf6wHXtc4uZYF+ABjox1DUimeOcc7TLDqzviT1D63VpzE485vgnikl10CBApJO5D+PB/NFQAjmZScGbJmk3H4gzN5QyqejEtzTuL8LJd/u/U94yq8xFPlM8OGjyTCVNUVOLQviM3Map0Y1d74AS1CTe9eyVnCK5bGvmF6zgoqekOWaelb7BLydRvlOcApS8ZpEsPc0NnBfeF9CgpC1odBdbXMDolQth6BKlPhNLs8Ve114InKmvib45Dnr/eZxkgVtr6cQ2caObG0bIiC3ASR2m98fKzJ60LbrQzmQXYxij2YkHH/QIFqIxb3D/9rF416iF4XEpd6jHxssritK0tcYWQhR/UP16dfki+hJm1BkHfwsyqvkrmaItE74AIfaw3b4HKW2bfHKVuDsYruxkOvyI+9S9xQt9hybZ5Jnni3WhYSuZ7r5xUPZN3CUwcF5h4JbqT8L+7Uctu3YEFwqkL3uxrN7+b+WmwIs=
+  file_glob: true
   file: output/*
   on:
     repo: Mach1Studios/m1-transcode
