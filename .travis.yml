@@ -13,20 +13,6 @@ before_install:
   - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - eval "${MATRIX_EVAL}"
 
-install:
-  - pushd ${TRAVIS_BUILD_DIR}
-  - if [ -d "${TRAVIS_BUILD_DIR}/vcpkg/.git" ] ; then echo vcpkg cached ; else rm -rf vcpkg ; git clone https://github.com/Microsoft/vcpkg ; fi
-  - cd vcpkg
-  - git checkout .
-  - git pull
-  - if [ "${USE_VCPKG}" = true ] ; then ./bootstrap-vcpkg.sh ; fi
-  - if [ "${USE_VCPKG}" = true ] ; then echo "set(VCPKG_BUILD_TYPE release)" >> triplets/x64-osx.cmake ; fi
-  - if [ "${USE_VCPKG}" = true ] ; then echo "set(VCPKG_BUILD_TYPE release)" >> triplets/x64-linux.cmake ; fi
-  - if [ "${USE_VCPKG}" = true ] ; then rm -rf buildtrees; fi
-  - if [ "${USE_VCPKG}" = true ] ; then rm -rf installed; fi
-  - if [ "${USE_VCPKG}" = true ] ; then rm -rf packages; fi
-  - popd
-
 stages:
   - name: build
 
@@ -129,12 +115,22 @@ jobs:
       os: windows
       language: sh
       env:
-        - USE_VCPKG=true
         - VCPKG_ROOT="${TRAVIS_BUILD_DIR}/vcpkg"
         - VCPKG_DEFINES="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+      cache:
+        timeout: 1000
+        directories:
+          - ${TRAVIS_BUILD_DIR}/vcpkg
+          - ${TRAVIS_BUILD_DIR}/.cache/vcpkg
       git:
         submodules: false
       install:
+        - cd ${TRAVIS_BUILD_DIR}
+        - if [ -d "${TRAVIS_BUILD_DIR}/vcpkg/.git" ] ; then echo vcpkg cached ; else rm -rf vcpkg ; git clone https://github.com/Microsoft/vcpkg ; fi
+        - cd vcpkg
+        - git checkout .
+        - git pull
+        - ./bootstrap-vcpkg.bat
         - cd ${TRAVIS_BUILD_DIR}
         - choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
         - choco install -y make
@@ -142,7 +138,7 @@ jobs:
         - choco install -y boost-msvc-14.1
         - choco install -y pkgconfiglite
         - export PATH="$(powershell -Command '("Process", "Machine" | % {[Environment]::GetEnvironmentVariable("PATH", $_) -Split ";" -Replace "\\$", ""} | Select -Unique | % { cygpath $_ }) -Join ":"')"
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libvorbis:x64-windows-static libflac:x64-windows-static opus:x64-windows-static mp3lame:x86-windows-static mpg123:x86-windows-static libvorbis:x86-windows-static libflac:x86-windows-static opus:x86-windows-static mp3lame:x86-windows-static mpg123:x86-windows-static
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libvorbis:x64-windows-static libflac:x64-windows-static opus:x64-windows-static mp3lame:x86-windows mpg123:x86-windows libvorbis:x86-windows libflac:x86-windows opus:x86-windows mp3lame:x86-windows mpg123:x86-windows
         - cd ${TRAVIS_BUILD_DIR}/m1-transcode
         - ./scripts/setup.sh
       script:
@@ -152,8 +148,8 @@ jobs:
         - cmake . -DENABLE_PACKAGE_CONFIG=ON -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DADM_EXAMPLES=OFF -DADM_UNIT_TESTS=OFF-DADM_PACKAGE_AND_INSTALL=OFF -DBW64_EXAMPLES=OFF -DBW64_UNIT_TESTS=OFF -DBW64_PACKAGE_AND_INSTALL=OFF -DENABLE_STATIC_RUNTIME=ON -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -B_builds/vs-15-2017-win64 -G "Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=_install/vs-15-2017-win64
         - cmake --build _builds/vs-15-2017-win64 --config Release --target install -- //nologo //verbosity:quiet //clp:ErrorsOnly
       after_success:
-        - cd ${TRAVIS_BUILD_DIR}
         # zip up win-x64
+        - cd ${TRAVIS_BUILD_DIR}
         - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} win-x64 _install\vs-15-2017-win64\bin\m1-transcode.exe
         - find m1-transcode-win-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-win-x64.zip -@
         - cp m1-transcode-win-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-win-x64.zip
@@ -208,9 +204,9 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: pQuG5nGUf30xNXDZazPsewC/FyCwO41zsRUwUvG1+k3uqVUWe3QQLKV8wlwFelECw7X6blWbSMyvqMr5k96Vysk++nGT9yam0zTeRd9AFF/B3fuOnihrLMiS7taIU8P0NE3cB0AvkjHzpiMXpA01lKfzWA6dlcv5ETXowXuCGq1A2yH0iuK5bst3xqjUx/cg369nxFad2CHLOs77a238yrgsMUNPEMwYlz1eSLzLV1Cukrqu1zz7KyVnOrP9kQM5A/UELH/eAYP5FftFmzRjClgBrfY2olCB8dKynU6dnCzElSApAGhd/fbLiHubgf00kbowk4HDMb7PmgoGhzv3IqxMdX672lMEknRGQFsJ/Vr3HZMkSQQfVFxAXcCHPZyaYqgblZqb0bFFl4YXHcsf74z2i7vn5eamdXGmzo2BhSHSOKKnPBPzPl49vy9JgsOK6r92hsQCUvG+ydjPsrYHwKNfJRwuGSFPklUxJOGweu7po9eaQ3g4+PIkF5L0/4loNw1K/UFixGNLAYIVwiu3abySKRkV22cIniIaD7MynUrQo3vRL8THQbml/vZCud8tPKcGDZfrk+QO1d13uQYYawK9TaJ7Vxht8RN/v/LC+clWiRVTT36OViDiUZWp6FlPhR7vLhY0oQqsJi82U+qbyuO/vXPq9QTeC6FdaNsbCs4=
-  file_glob: true
+    secure: Mpm1P5Wtvhe65sF4NeB1K5C07ogF2gn355qaKhy6Lw2FT9mQPRjB+DKgkxNPClw34nQ8+ckPcJwTM/g0l0LQCmiRS42MfyA8D946nkzjXOFRRFYE4rOG/4DcBM9+l/1OCGi7mso44yZIf1OMoQ2Ow7zeLKMNw4PWxEypnik8Pl5/oW8L5ZsJFsEv/fqGDcEu1LigQg7CVQf6wHXtc4uZYF+ABjox1DUimeOcc7TLDqzviT1D63VpzE485vgnikl10CBApJO5D+PB/NFQAjmZScGbJmk3H4gzN5QyqejEtzTuL8LJd/u/U94yq8xFPlM8OGjyTCVNUVOLQviM3Map0Y1d74AS1CTe9eyVnCK5bGvmF6zgoqekOWaelb7BLydRvlOcApS8ZpEsPc0NnBfeF9CgpC1odBdbXMDolQth6BKlPhNLs8Ve114InKmvib45Dnr/eZxkgVtr6cQ2caObG0bIiC3ASR2m98fKzJ60LbrQzmQXYxij2YkHH/QIFqIxb3D/9rF416iF4XEpd6jHxssritK0tcYWQhR/UP16dfki+hJm1BkHfwsyqvkrmaItE74AIfaw3b4HKW2bfHKVuDsYruxkOvyI+9S9xQt9hybZ5Jnni3WhYSuZ7r5xUPZN3CUwcF5h4JbqT8L+7Uctu3YEFwqkL3uxrN7+b+WmwIs=
   file: build/*
-  skip_cleanup: true
   on:
-    branches: main
+    repo: Mach1Studios/m1-transcode
+    branch: main
+  skip_cleanup: 'true'
