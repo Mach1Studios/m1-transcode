@@ -208,5 +208,5 @@ deploy:
   file: build/*
   on:
     repo: Mach1Studios/m1-transcode
-    branch: main
+    tags: true
   skip_cleanup: 'true'
