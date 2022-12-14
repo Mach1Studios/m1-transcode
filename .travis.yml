@@ -23,6 +23,10 @@ jobs:
       os: linux
       sudo: required
       dist: focal
+      cache:
+        timeout: 1000
+        directories:
+          - ${TRAVIS_BUILD_DIR}/libs
       addons:
         apt:
           sources:
@@ -51,7 +55,8 @@ jobs:
         - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} linux-x64 m1-transcode
         - cd ${TRAVIS_BUILD_DIR}
         - find m1-transcode-linux-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-linux-x64.zip -@
-        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-linux-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-linux-x64.zip
+        - mkdir -p output
+        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-linux-x64.zip ${TRAVIS_BUILD_DIR}/output/m1-transcode-linux-x64.zip
 
     - stage: build
       name: m1-transcode Linux-ARM64
@@ -59,6 +64,10 @@ jobs:
       sudo: required
       arch: arm64
       dist: focal
+      cache:
+        timeout: 1000
+        directories:
+          - ${TRAVIS_BUILD_DIR}/libs
       addons:
         apt:
           sources:
@@ -108,20 +117,23 @@ jobs:
         - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} linux-arm m1-transcode
         - cd ${TRAVIS_BUILD_DIR}
         - find m1-transcode-linux-arm -path '*/.*' -prune -o -type f -print | zip m1-transcode-linux-arm.zip -@
-        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-linux-arm.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-linux-arm.zip
+        - mkdir -p output
+        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-linux-arm.zip ${TRAVIS_BUILD_DIR}/output/m1-transcode-linux-arm.zip
 
     - stage: build
       name: m1-transcode Windows
       os: windows
       language: sh
       env:
-        - VCPKG_ROOT="${TRAVIS_BUILD_DIR}/vcpkg"
+        - VCPKG_ROOT=${TRAVIS_BUILD_DIR}/vcpkg
+        - VCPKG_PATH=${VCPKG_ROOT}
         - VCPKG_DEFINES="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
       cache:
         timeout: 1000
         directories:
           - ${TRAVIS_BUILD_DIR}/vcpkg
           - ${TRAVIS_BUILD_DIR}/.cache/vcpkg
+          - ${TRAVIS_BUILD_DIR}/libs
       git:
         submodules: false
       install:
@@ -138,7 +150,7 @@ jobs:
         - choco install -y boost-msvc-14.1
         - choco install -y pkgconfiglite
         - export PATH="$(powershell -Command '("Process", "Machine" | % {[Environment]::GetEnvironmentVariable("PATH", $_) -Split ";" -Replace "\\$", ""} | Select -Unique | % { cygpath $_ }) -Join ":"')"
-        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libvorbis:x64-windows-static libflac:x64-windows-static opus:x64-windows-static mp3lame:x86-windows mpg123:x86-windows libvorbis:x86-windows libflac:x86-windows opus:x86-windows mp3lame:x86-windows mpg123:x86-windows
+        - ${TRAVIS_BUILD_DIR}/vcpkg/vcpkg.exe install libvorbis:x64-windows libvorbis:x64-windows-static libvorbis:x86-windows libflac:x64-windows libflac:x64-windows-static libflac:x86-windows opus:x64-windows opus:x64-windows-static opus:x86-windows mp3lame:x64-windows mp3lame:x64-windows-static mp3lame:x86-windows mpg123:x64-windows mpg123:x64-windows-static mpg123:x86-windows        - cd ${TRAVIS_BUILD_DIR}
         - cd ${TRAVIS_BUILD_DIR}
         - ./scripts/setup.sh
       script:
@@ -152,12 +164,14 @@ jobs:
         - cd ${TRAVIS_BUILD_DIR}
         - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} win-x64 _install\vs-15-2017-win64\bin\m1-transcode.exe
         - find m1-transcode-win-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-win-x64.zip -@
-        - cp m1-transcode-win-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-win-x64.zip
+        - mkdir -p output
+        - cp m1-transcode-win-x64.zip ${TRAVIS_BUILD_DIR}/output/m1-transcode-win-x64.zip
         # zip up win-x86
         - cd ${TRAVIS_BUILD_DIR}
         - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} win-x86 _install\vs-15-2017\bin\m1-transcode.exe
         - find m1-transcode-win-x86 -path '*/.*' -prune -o -type f -print | zip m1-transcode-win-x86.zip -@
-        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-win-x86.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-win-x86.zip
+        - mkdir -p output
+        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-win-x86.zip ${TRAVIS_BUILD_DIR}/output/m1-transcode-win-x86.zip
 
     - stage: build
       name: m1-transcode macOS
@@ -179,8 +193,10 @@ jobs:
         - HOMEBREW_NO_AUTO_UPDATE=1
       osx_image: xcode13.2
       cache:
+        timeout: 1000
         directories:
           - ${TRAVIS_BUILD_DIR}/Library/Caches/Homebrew
+          - ${TRAVIS_BUILD_DIR}/libs
       before_cache:
         - brew cleanup
       git:
@@ -194,7 +210,8 @@ jobs:
         - cd ${TRAVIS_BUILD_DIR}
         - ./scripts/packaging.sh ${TRAVIS_BUILD_DIR} osx-x64 m1-transcode
         - find m1-transcode-osx-x64 -path '*/.*' -prune -o -type f -print | zip m1-transcode-osx-x64.zip -@
-        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-osx-x64.zip ${TRAVIS_BUILD_DIR}/build/m1-transcode-osx-x64.zip
+        - mkdir -p output
+        - cp ${TRAVIS_BUILD_DIR}/m1-transcode-osx-x64.zip ${TRAVIS_BUILD_DIR}/output/m1-transcode-osx-x64.zip
 
 before_deploy: 
   - cd ${TRAVIS_BUILD_DIR}
@@ -205,7 +222,7 @@ deploy:
   provider: releases
   api_key:
     secure: Mpm1P5Wtvhe65sF4NeB1K5C07ogF2gn355qaKhy6Lw2FT9mQPRjB+DKgkxNPClw34nQ8+ckPcJwTM/g0l0LQCmiRS42MfyA8D946nkzjXOFRRFYE4rOG/4DcBM9+l/1OCGi7mso44yZIf1OMoQ2Ow7zeLKMNw4PWxEypnik8Pl5/oW8L5ZsJFsEv/fqGDcEu1LigQg7CVQf6wHXtc4uZYF+ABjox1DUimeOcc7TLDqzviT1D63VpzE485vgnikl10CBApJO5D+PB/NFQAjmZScGbJmk3H4gzN5QyqejEtzTuL8LJd/u/U94yq8xFPlM8OGjyTCVNUVOLQviM3Map0Y1d74AS1CTe9eyVnCK5bGvmF6zgoqekOWaelb7BLydRvlOcApS8ZpEsPc0NnBfeF9CgpC1odBdbXMDolQth6BKlPhNLs8Ve114InKmvib45Dnr/eZxkgVtr6cQ2caObG0bIiC3ASR2m98fKzJ60LbrQzmQXYxij2YkHH/QIFqIxb3D/9rF416iF4XEpd6jHxssritK0tcYWQhR/UP16dfki+hJm1BkHfwsyqvkrmaItE74AIfaw3b4HKW2bfHKVuDsYruxkOvyI+9S9xQt9hybZ5Jnni3WhYSuZ7r5xUPZN3CUwcF5h4JbqT8L+7Uctu3YEFwqkL3uxrN7+b+WmwIs=
-  file: build/*
+  file: output/*
   on:
     repo: Mach1Studios/m1-transcode
     tags: true
