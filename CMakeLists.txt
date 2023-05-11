@@ -75,6 +75,10 @@ message(STATUS "Building version ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PAT
 #    include_directories(${LIBSNDFILE_INCLUDE_DIRS})
 #else()
     # Include subdirectories only if you manually installed them
+    set(BUILD_PROGRAMS OFF)
+    set(BUILD_EXAMPLES OFF)
+    set(ENABLE_CPACK OFF)
+    set(BUILD_TESTING OFF)
     add_subdirectory(libs/libsndfile)
 #endif(LIBSNDFILE_FOUND)
 
