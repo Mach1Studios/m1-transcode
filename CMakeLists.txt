@@ -68,6 +68,15 @@ message(STATUS "Building version ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PAT
 # Dependencies
 #----------------
 
+# Force searching for static deps
+if(WIN32)
+    list(INSERT CMAKE_FIND_LIBRARY_SUFFIXES 0 .lib .a)
+else()
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+endif()
+
+option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static ones (.lib/.a)" OFF)
+
 #find_package(SndFile REQUIRED)
 #if(LIBSNDFILE_FOUND)
 #    message(STATUS "LIBSNDFILE_INCLUDE_DIRS='${LIBSNDFILE_INCLUDE_DIRS}'")
@@ -75,6 +84,7 @@ message(STATUS "Building version ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PAT
 #    include_directories(${LIBSNDFILE_INCLUDE_DIRS})
 #else()
     # Include subdirectories only if you manually installed them
+    set(BUILD_SHARED_LIBS OFF)
     set(BUILD_PROGRAMS OFF)
     set(BUILD_EXAMPLES OFF)
     set(ENABLE_CPACK OFF)
