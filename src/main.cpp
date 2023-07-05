@@ -82,9 +82,11 @@ void printHelp() {
 	std::cout << std::endl;
 	std::cout << "usage: ./m1-transcode -in-file test_s8.wav -in-fmt M1Spatial -out-file test_b.wav -out-fmt ACNSN3D -out-file-chans 0" << std::endl;
     std::cout << "usage: ./m1-transcode -in-file test_s8.wav -in-fmt M1Spatial -out-file 7_1_2-ADM.wav -out-fmt 7.1.2_M -write-metada -out-file-chans 0" << std::endl;
+    std::cout << std::endl;
     std::cout << "all boolean argument flags should be used before the end of the command to ensure it is captured" << std::endl;
 	std::cout << std::endl;
 	std::cout << "  -help                 - list command line options" << std::endl;
+    std::cout << "  -formats              - list all available formats" << std::endl;
 	std::cout << "  -in-file  <filename>  - input file: put quotes around sets of files" << std::endl;
 	std::cout << "  -in-fmt   <fmt>       - input format: see supported formats below" << std::endl;
     std::cout << "  -in-json  <json>      - input json: for input custom json Mach1Transcode templates" << std::endl;
@@ -99,59 +101,32 @@ void printHelp() {
 	std::cout << "  -extract-metadata     - export any detected XML metadata into separate text file" << std::endl;
 	std::cout << "  -write-metadata       - write channel-bed ADM metadata for supported formats" << std::endl;
 	std::cout << std::endl;
-	std::cout << "  Formats Supported:" << std::endl;
-    std::cout << "    M1Spatial-4 (Mach1 Horizon / Quad) - L R Ls Rs" << std::endl;
-	std::cout << "    M1Spatial-4+S (Mach1 Horizon / Quad) - L R Ls Rs StereoL StereoR" << std::endl;
-	std::cout << "    M1HorizonPairs (Mach1 Horizon / Quad-Binaural) - FrontPair, LeftPair, RearPair, RightPair" << std::endl;
-	std::cout << "    M1Spatial-8 (Mach1 Spatial) - Upper L R Ls Rs, Lower L R Ls Rs" << std::endl;
-	std::cout << "    M1Spatial-8+S (Mach1 Spatial) - Upper L R Ls Rs, Lower L R Ls Rs, StereoL StereoR" << std::endl;
-	std::cout << "    M1SpatialPairs (Mach1 Spatial Pairs) - Upper front, left, rear, right, pairs, then lower same" << std::endl;
-	std::cout << "    M1SpatialFaces - Fc, Lc, Rc, Bc, Tc, Bc" << std::endl;
-    std::cout << "    2.0_M                              - L & R spatialized" << std::endl;
-    std::cout << "    2.0_C                              - L & R spatialized, forward focus" << std::endl;
-    std::cout << "    3.0_LCR                            - L & R spatialized with C mono" << std::endl;
-	std::cout << "    5.0_M                              - L C R Ls Rs" << std::endl;
-    std::cout << "    5.0_C                              - L C R Ls Rs, cinema forward focus" << std::endl;
-    std::cout << "    5.0_S                              - L C R Ls Rs, 110 degree surround sides & cinema forward focus" << std::endl;
-	std::cout << "    5.1_M (Pro Tools default / C|24)   - L C R Ls Rs LFE" << std::endl;
-	std::cout << "    5.1_C (Pro Tools default / C|24)   - L C R Ls Rs LFE, forward focus" << std::endl;
-	std::cout << "    5.1_M (SMPTE/ITU for AC3)          - L R C LFE Ls Rs" << std::endl;
-	std::cout << "    5.1_M (DTS)                        - L R Ls Rs C LFE" << std::endl;
-    std::cout << "    5.0.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
-    std::cout << "    5.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
-    std::cout << "    5.0.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
-    std::cout << "    5.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
-    std::cout << "    5.1.4_C (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
-	std::cout << "    6.0_M                              - L C R Ls Rs Cs" << std::endl;
-    std::cout << "    7.0_C (Pro Tools default)          - L C R Lss Rss Lsr Rsr, forward focus" << std::endl;
-    std::cout << "    7.0_C (SMPTE)                      - L Lc C Rc R Ls Rs" << std::endl;
-	std::cout << "    7.1_M (Pro Tools default)          - L C R Lss Rss Lsr Rsr LFE" << std::endl;
-	std::cout << "    7.1_C (Pro Tools default)          - L C R Lss Rss Lsr Rsr LFE, forward focus" << std::endl;
-	std::cout << "    7.1_C (SMPTE)                      - L Lc C Rc R Ls Rs LFE" << std::endl;
-	std::cout << "    7.0.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr Lts Rts" << std::endl;
-    std::cout << "    7.0.2_M (SMPTE)                    - L R C Lss Rss Lsr Rsr Lts Rts" << std::endl;
-	std::cout << "    7.1.2_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE Lts Rts [ADM Metadata Supported]" << std::endl;
-    std::cout << "    7.1.2_C (Film / Pro Tools default) - L R C LFE Lss Rss Lsr Rsr Lts Rts [ADM Metadata Supported]" << std::endl;
-	std::cout << "    7.1.2_M (SMPTE)                    - L R C LFE Lss Rss Lsr Rsr Lts Rts" << std::endl;
-	std::cout << "    7.0.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr FLts FRts BLts BRts" << std::endl;
-	std::cout << "    7.1.4_M (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
-    std::cout << "    7.1.4_C (Film / Pro Tools default) - L C R Lss Rss Lsr Rsr LFE FLts FRts BLts BRts [ADM Metadata Supported]" << std::endl;
-    std::cout << "    16.0_M                             - 16 channel Surround 3D layout" << std::endl;
-	std::cout << "    ACNSN3D                            - 1st order B-format, ACN order and SN3D weighting" << std::endl;
-	std::cout << "    FuMa                               - 1st order B-format, Furse-Malham order and weighting" << std::endl;
-	std::cout << "    TBE                                - W, X, Y, Z, U, V, T, S" << std::endl;
-	std::cout << "    ACNSN3DO2A                         - 2nd order B-format, AmbiX ACN order and SN3D weighting" << std::endl;
-	std::cout << "    FuMaO2A                            - 2nd order B-format, Furse-Malham order and weighting, W, Y, Z, X, V, T, R, S, U" << std::endl;
-	std::cout << "    ACNSN3DO3A                         - 16 channel AmbiX" << std::endl;
-	std::cout << "    FuMaO3A                            - 3rd order B-format, W, Y, Z, X, V, T, R, S, U, Q, O, M, K, L, N, P" << std::endl;
-    std::cout << "    ACNSN3DmaxRE1oa                    - 1st order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    std::cout << "    ACNSN3DmaxRE2oa                    - 2nd order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    std::cout << "    ACNSN3DmaxRE3oa                    - 3rd order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    std::cout << "    ACNSN3DmaxRE4oa                    - 4th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    std::cout << "    ACNSN3DmaxRE5oa                    - 5th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    std::cout << "    ACNSN3DmaxRE6oa                    - 6th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-    std::cout << "    ACNSN3DmaxRE7oa                    - 7th order, AmbiX ACN order and SN3D-maxRE from IEM AllRAD" << std::endl;
-	std::cout << std::endl;
+}
+
+void printFormats() {
+    Mach1Transcode formatLister;
+    formatLister.setInputFormat(formatLister.getFormatFromString("1.0"));
+    formatLister.setOutputFormat(formatLister.getFormatFromString("M1Spatial-8"));
+    formatLister.processConversionPath();
+    std::vector<std::vector<float>> matrix = formatLister.getMatrixConversion();
+    std::vector<std::string> formats = formatLister.getAllFormatNames();
+    
+    std::cout << "  Format Descriptions:" << std::endl;
+    std::cout << "    - M or Music          = `Music Mix` (Channels are spaced out evenly throughout the horizontal soundfield)" << std::endl;
+    std::cout << "    - C or Cinema         = `Cinema Mix` (Channels are more focused on the front)" << std::endl;
+    std::cout << "    - S or SideSurround   = `Side Surround Mix` (Surround channels are oriented more to the sides instead of rear (+-110 azimuth instead of +-135))" << std::endl;
+    std::cout << "    - R or RearSurround   = `Rear Surround Mix` (Surround channels are oriented more to the rears instead of sides (+-154 azimuth instead of +-135))" << std::endl;
+    std::cout << "    - SIM or Simulated    = `Simulated Room Mix` (Lessens the divergence of virtual speakers to quickly simulate hearing front/back soundfield within a real world listening environment)" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  Mach1 Spatial Best Practices:" << std::endl;
+    std::cout << "    - C / S / R surround configurations should use Mach1Spatial-12 as a minimum to correctly handle the transcoding of a dedicated Center channel" << std::endl;
+    std::cout << "    - M or SIM surround configurations could be retained within lower Mach1Spatial-4 / Mach1Spatial-8 containers" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  Formats Supported:" << std::endl;
+    for (auto fmt = 0; fmt < formats.size(); fmt++) {
+        std::cout << "    " << formats[fmt] << std::endl;
+    }
+    std::cout << std::endl;
 }
 
 struct audiofileInfo {
@@ -333,7 +308,7 @@ int main(int argc, char* argv[]) {
     Mach1AudioTimeline m1audioTimeline;
     Mach1Transcode m1transcode;
     m1transcode.setCustomPointsSamplerCallback(callbackPointsSampler);
-    
+
 	// locals for cmd line parameters
 	bool fileOut = false;
     bool useAudioTimeline = false; // adm, atmos formats
@@ -387,6 +362,15 @@ int main(int argc, char* argv[]) {
 		printHelp();
 		return 0;
 	}
+    if (cmdOptionExists(argv, argv + argc, "-f")
+        || cmdOptionExists(argv, argv + argc, "-formats")
+        || cmdOptionExists(argv, argv + argc, "-format-list")
+        || cmdOptionExists(argv, argv + argc, "--formats")
+        || argc == 1)
+    {
+        printFormats();
+        return 0;
+    }
 	pStr = getCmdOption(argv, argv + argc, "-normalize");
 	if (pStr != NULL)
 	{
@@ -478,6 +462,7 @@ int main(int argc, char* argv[]) {
             {
                 std::ifstream file(pStr);
                 std::string strJson((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+                m1transcode.setInputFormat(m1transcode.getFormatFromString("CustomPoints"));
 				m1transcode.setInputFormatCustomPointsJson((char*)strJson.c_str());
 			}
         } else {
@@ -685,7 +670,7 @@ int main(int argc, char* argv[]) {
 			// Mach1 Spatial Downmixer
 			// Triggered due to correlation of top vs bottom
 			// being higher than threshold
-            if (spatialDownmixerMode && outFmt == m1transcode.getFormatFromString("M1Spatial")) {
+            if (spatialDownmixerMode && (outFmt == m1transcode.getFormatFromString("M1Spatial") || outFmt == m1transcode.getFormatFromString("M1Spatial-8"))) {
                 m1transcode.setSpatialDownmixer(corrThreshold);
 				if (m1transcode.getSpatialDownmixerPossibility()) {
 					/*
@@ -696,7 +681,7 @@ int main(int argc, char* argv[]) {
 					*/ 
 
                     // reinitialize inputs and outputs
-					outFmt = m1transcode.getFormatFromString("M1Horizon");
+					outFmt = m1transcode.getFormatFromString("M1Spatial-4");
 					m1transcode.setOutputFormat(outFmt);
 					m1transcode.processConversionPath();
 
@@ -756,7 +741,7 @@ int main(int argc, char* argv[]) {
                     }
                     
                     // TODO: remove the hardcoded `adm_metadata.h` file and write inline instructions for creating the metadata to scale for all formats
-                    if (outFmt == m1transcode.getFormatFromString("M1Spatial")){
+                    if (outFmt == m1transcode.getFormatFromString("M1Spatial") || outFmt == m1transcode.getFormatFromString("M1Spatial-8")){
                         // setup `chna` metadata chunk
                         /// Creates a description of an 8 objects
                         std::vector<ChannelDescType> channelDescType = { {3}, {3}, {3}, {3}, {3}, {3}, {3}, {3} };
@@ -770,7 +755,7 @@ int main(int argc, char* argv[]) {
                         bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
                         outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
                     }
-                    else if (outFmt == m1transcode.getFormatFromString("7.1.2_M") || outFmt == m1transcode.getFormatFromString("7.1.2_C") || outFmt == m1transcode.getFormatFromString("7.1.2_S")){
+                    else if (outFmt == m1transcode.getFormatFromString("7.1.2_M") || outFmt == m1transcode.getFormatFromString("7.1.2_C") || outFmt == m1transcode.getFormatFromString("7.1.2_S") || outFmt == m1transcode.getFormatFromString("7.1.2_C_SIM")){
                         // setup `chna` metadata chunk
                         /// Creates a description of an 7.1.2 channel bed
                         std::vector<ChannelDescType> channelDescType = { {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1} };
@@ -798,7 +783,7 @@ int main(int argc, char* argv[]) {
                         bw64::AxmlChunk axmlChunkAdmCorrected(axmlChunkAdmCorrectedString);
                         outfiles[i].open(outfilestr, inputInfo.sampleRate, actualOutFileChannels, bitDepth, chnaChunkAdm, axmlChunkAdmCorrected);
                     }
-                    else if (outFmt == m1transcode.getFormatFromString("7.1.4_M") || outFmt == m1transcode.getFormatFromString("7.1.4_C") || outFmt == m1transcode.getFormatFromString("7.1.4_S")){
+                    else if (outFmt == m1transcode.getFormatFromString("7.1.4_M") || outFmt == m1transcode.getFormatFromString("7.1.4_C") || outFmt == m1transcode.getFormatFromString("7.1.4_S") || outFmt == m1transcode.getFormatFromString("7.1.4_C_SIM")){
                         // setup `chna` metadata chunk
                         /// Creates a description of an 7.1 channel bed + 4 object bed
                         std::vector<ChannelDescType> channelDescType = { {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {3}, {3}, {3}, {3} };
@@ -828,10 +813,10 @@ int main(int argc, char* argv[]) {
 					cerr << "Error: opening out-file: " << outfilestr << std::endl;
 					return -1;
 				}
-				if (outFmt == m1transcode.getFormatFromString("M1Spatial")) {
+				if (outFmt == m1transcode.getFormatFromString("M1Spatial") || outFmt == m1transcode.getFormatFromString("M1Spatial-8")) {
 					outfiles[i].setString(0x05, "mach1spatial-8");
 				}
-				else if (outFmt == m1transcode.getFormatFromString("M1Horizon")) {
+				else if (outFmt == m1transcode.getFormatFromString("M1Horizon") || outFmt == m1transcode.getFormatFromString("M1Spatial-4")) {
 					outfiles[i].setString(0x05, "mach1horizon-4");
 				}
 				else if (outFmt == m1transcode.getFormatFromString("M1HorizonPairs")) {
