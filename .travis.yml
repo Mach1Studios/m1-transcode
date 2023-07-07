@@ -22,7 +22,7 @@ jobs:
       name: m1-transcode Linux-x86_64
       os: linux
       sudo: required
-      dist: focal
+      dist: jammy
       cache:
         timeout: 1000
         directories:
@@ -33,7 +33,6 @@ jobs:
             - ubuntu-toolchain-r-test
           packages:
             - build-essential
-            - g++-7
             - libasound2-dev
             - libvorbis-dev
             - libflac-dev
@@ -69,7 +68,7 @@ jobs:
       os: linux
       sudo: required
       arch: arm64
-      dist: focal
+      dist: jammy
       cache:
         timeout: 1000
         directories:
