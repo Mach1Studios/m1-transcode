@@ -16,14 +16,14 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 if(DEFINED USE_EXTERNAL_M1SDK)
     set(USE_EXTERNAL_M1SDK 1)
-    message(STATUS "Using preinstalled external M1-SDK")
+    message(STATUS "Using preinstalled external M1-SDK via env vars")
 endif()
 
 # Prepend our CMake modules directory
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 message(STATUS "CMAKE_MODULE_PATH='${CMAKE_MODULE_PATH}'")
 
-if (NOT M1SDK_PATH STREQUAL "")
+if (DEFINED M1SDK_PATH AND NOT M1SDK_PATH STREQUAL "")
     set(MACH1SPATIAL_SDK_PATH ${M1SDK_PATH})
 elseif (USE_EXTERNAL_M1SDK)
     if(NOT "$ENV{M1SDK_PATH}" STREQUAL "")
