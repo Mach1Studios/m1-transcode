@@ -562,7 +562,8 @@ int main(int argc, char* argv[]) {
 	// determine number of input files
 	SndfileHandle *infile[Mach1TranscodeMAXCHANS];
 	vector<string> fNames;
-    split(infilename, ' ', fNames);
+    // TODO: fix delimiter for multiple files using comma or another solution
+    split(infilename, ',', fNames);
     audiofileInfo inputInfo;
     
     if (useAudioTimeline) {
