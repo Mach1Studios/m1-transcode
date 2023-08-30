@@ -562,8 +562,6 @@ int main(int argc, char* argv[]) {
 	// determine number of input files
 	SndfileHandle *infile[Mach1TranscodeMAXCHANS];
 	vector<string> fNames;
-    // TODO: fix delimiter for multiple files using comma or another solution
-    split(infilename, ',', fNames);
     audiofileInfo inputInfo;
     
     if (useAudioTimeline) {
@@ -572,8 +570,11 @@ int main(int argc, char* argv[]) {
             fNames.push_back(filename);
         }
     } else {
-        // already pushed back the first index of the string from the split command above
-    }
+		char** itr = std::find(argv, argv + argc, infilename);
+		do {
+			fNames.push_back(*itr);
+		} while (++itr != argv + argc && std::string(*itr).substr(0,1) != "-");
+	}
     
 	size_t numInFiles = fNames.size();
 	for (int i = 0; i < numInFiles; i++) {
