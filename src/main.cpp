@@ -570,6 +570,7 @@ int main(int argc, char* argv[]) {
             fNames.push_back(filename);
         }
     } else {
+		// check and process the input file, which may be several files separated by a space
 		char** itr = std::find(argv, argv + argc, infilename);
 		do {
 			fNames.push_back(*itr);
