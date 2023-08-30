@@ -32,7 +32,7 @@ elseif (USE_EXTERNAL_M1SDK)
         message(FATAL_ERROR "unexpected: the local M1SDK_PATH environment variable is not set or is empty!")
     endif()
 else()
-    set(MACH1SPATIAL_SDK_PATH "libs/m1-sdk")
+    set(MACH1SPATIAL_SDK_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libs/m1-sdk)
 endif()
 message(STATUS "MACH1SPATIAL_SDK_PATH is set: ${MACH1SPATIAL_SDK_PATH}")
 
@@ -101,7 +101,7 @@ option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static on
     set(BUILD_EXAMPLES OFF)
     set(ENABLE_CPACK OFF)
     set(BUILD_TESTING OFF)
-    add_subdirectory(libs/libsndfile)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/libsndfile)
 #endif(LIBSNDFILE_FOUND)
 
 #find_package(adm)
@@ -111,7 +111,7 @@ option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static on
 #    include_directories(${ADM_INCLUDE_DIRS})
 #else()
     # Include subdirectories only if you manually installed them
-    add_subdirectory(libs/libadm)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/libadm)
 #endif()
 
 #find_package(bw64)
@@ -121,7 +121,7 @@ option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static on
 #    include_directories(${BW64_INCLUDE_DIRS})
 #else()
     # Include subdirectories only if you manually installed them
-    add_subdirectory(libs/libbw64)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/libbw64)
 #endif()
 
 #----------------
@@ -193,8 +193,8 @@ include_directories(${LIBSNDFILE_INCLUDE_DIRS})
 if(WIN32 OR MSVC)
     add_definitions(-DM1_STATIC)
     # Change `PATH` to reflect `/MT` or `/MD` as needed!
-    set(MACH1TRANSCODE_LIBRARY_DEBUG ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Debug/Mach1TranscodeCAPId)
-    set(MACH1TRANSCODE_LIBRARY_RELEASE ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Release/Mach1TranscodeCAPI)
+    set(MACH1TRANSCODE_LIBRARY_DEBUG ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Debug/Mach1TranscodeCAPId.lib)
+    set(MACH1TRANSCODE_LIBRARY_RELEASE ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Release/Mach1TranscodeCAPI.lib)
     set(MACH1TRANSCODE_LIBRARY debug ${MACH1TRANSCODE_LIBRARY_DEBUG} optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
     set(MACH1TRANSCODE_LIBRARIES debug ${MACH1TRANSCODE_LIBRARY_DEBUG} optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
 else()
