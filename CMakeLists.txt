@@ -111,6 +111,9 @@ include(cmake/fetchM1SDK.cmake)
 #    include_directories(${ADM_INCLUDE_DIRS})
 #else()
     # Include subdirectories only if you manually installed them
+    option(ADM_EXAMPLES "" OFF)
+    option(ADM_UNIT_TESTS "" OFF)
+    option(ADM_PACKAGE_AND_INSTALL "" OFF)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/libadm)
 #endif()
 
@@ -121,6 +124,9 @@ include(cmake/fetchM1SDK.cmake)
 #    include_directories(${BW64_INCLUDE_DIRS})
 #else()
     # Include subdirectories only if you manually installed them
+    option(BW64_EXAMPLES "" OFF)
+    option(BW64_UNIT_TESTS "" OFF)
+    option(BW64_PACKAGE_AND_INSTALL "" OFF)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/libbw64)
 #endif()
 
