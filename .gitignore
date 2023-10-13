@@ -114,3 +114,7 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+CPackConfig.cmake
+CPackSourceConfig.cmake
+install_manifest.txt
+Makefile

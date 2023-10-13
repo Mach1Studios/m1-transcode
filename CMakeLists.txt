@@ -17,48 +17,45 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 if(DEFINED USE_EXTERNAL_M1SDK)
     set(USE_EXTERNAL_M1SDK 1)
     message(STATUS "Using preinstalled external M1-SDK via env vars")
+    message(STATUS "Use the `M1SDK_PATH` var to set the path")
 endif()
 
 # Prepend our CMake modules directory
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 message(STATUS "CMAKE_MODULE_PATH='${CMAKE_MODULE_PATH}'")
 
-if (DEFINED M1SDK_PATH AND NOT M1SDK_PATH STREQUAL "")
-    set(MACH1SPATIAL_SDK_PATH ${M1SDK_PATH})
-elseif (USE_EXTERNAL_M1SDK)
+if (USE_EXTERNAL_M1SDK)
     if(NOT "$ENV{M1SDK_PATH}" STREQUAL "")
         set(MACH1SPATIAL_SDK_PATH "$ENV{M1SDK_PATH}" CACHE PATH "Copied from environment variable")
     else()
         message(FATAL_ERROR "unexpected: the local M1SDK_PATH environment variable is not set or is empty!")
     endif()
-else()
-    set(MACH1SPATIAL_SDK_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libs/m1-sdk)
-endif()
-message(STATUS "MACH1SPATIAL_SDK_PATH is set: ${MACH1SPATIAL_SDK_PATH}")
+    message(STATUS "MACH1SPATIAL_SDK_PATH is set: ${MACH1SPATIAL_SDK_PATH}")
 
-if(WIN32 OR MSVC)
-    if (NOT "$ENV{VCPKG_PATH}" STREQUAL "")
-        set(VCPKG_PATH "$ENV{VCPKG_PATH}" CACHE INTERNAL "Copied from environment variable")
-        message(STATUS "VCPKG_PATH is set: ${VCPKG_PATH}")
-        include(${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake)
-        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-            # 64 bits
-            set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/vs-15-2017-x86_64)
-        elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-            # 32 bits
-            set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/vs-15-2017-x86)
+    if(WIN32 OR MSVC OR MINGW)
+        if (NOT "$ENV{VCPKG_PATH}" STREQUAL "")
+            set(VCPKG_PATH "$ENV{VCPKG_PATH}" CACHE INTERNAL "Copied from environment variable")
+            message(STATUS "VCPKG_PATH is set: ${VCPKG_PATH}")
+            include(${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake)
+            if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+                # 64 bits
+                set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/vs-15-2017-x86_64)
+            elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+                # 32 bits
+                set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/vs-15-2017-x86)
+            endif()
+        else()
+            message(FATAL_ERROR "unexpected: the local VCPKG_PATH environment variable is not set or is empty!")
         endif()
+    elseif(APPLE)
+        set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/xcode)
+    elseif(UNIX AND NOT APPLE)
+        set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/linux)
     else()
-        message(FATAL_ERROR "unexpected: the local VCPKG_PATH environment variable is not set or is empty!")
+        set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/linux)
     endif()
-elseif(APPLE)
-    set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/xcode)
-elseif(UNIX AND NOT APPLE)
-    set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/linux)
-else()
-    set(MACH1SPATIAL_LIBS_PATH ${MACH1SPATIAL_SDK_PATH}/mach1spatial-libs/linux)
+    message(STATUS "MACH1SPATIAL_LIBS_PATH is set: ${MACH1SPATIAL_LIBS_PATH}")
 endif()
-message(STATUS "MACH1SPATIAL_LIBS_PATH is set: ${MACH1SPATIAL_LIBS_PATH}")
 
 #----------------
 # Version
@@ -88,6 +85,9 @@ else()
 endif()
 
 option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static ones (.lib/.a)" OFF)
+
+# download m1-sdk
+include(cmake/fetchM1SDK.cmake)
 
 #find_package(SndFile REQUIRED)
 #if(LIBSNDFILE_FOUND)
@@ -148,14 +148,28 @@ message(STATUS "CMAKE_CXX_COMPILE_OBJECT='${CMAKE_CXX_COMPILE_OBJECT}'")
 
 # collect and add source files
 set(SOURCES
-  src/main.cpp
-  src/ADMParse.cpp
-  ${MACH1SPATIAL_LIBS_PATH}/include/Mach1Transcode.cpp
-  ${MACH1SPATIAL_LIBS_PATH}/include/Mach1AudioTimeline.cpp
-  ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPFilters.cpp
-  ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPDynamics.cpp
-  ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPUtilities.cpp
+    src/main.cpp
+    src/ADMParse.cpp
 )
+
+if (USE_EXTERNAL_M1SDK)
+    set(SOURCES ${SOURCES}
+        ${MACH1SPATIAL_LIBS_PATH}/include/Mach1Transcode.cpp
+        ${MACH1SPATIAL_LIBS_PATH}/include/Mach1AudioTimeline.cpp
+        ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPFilters.cpp
+        ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPDynamics.cpp
+        ${MACH1SPATIAL_LIBS_PATH}/include/M1DSP/M1DSPUtilities.cpp
+    )
+else()
+    set(SOURCES ${SOURCES}
+        ${MACH1SPATIAL_LIBS_PATH}/xcode/include/Mach1Transcode.cpp
+        ${MACH1SPATIAL_LIBS_PATH}/xcode/include/Mach1AudioTimeline.cpp
+        ${MACH1SPATIAL_LIBS_PATH}/xcode/include/M1DSP/M1DSPFilters.cpp
+        ${MACH1SPATIAL_LIBS_PATH}/xcode/include/M1DSP/M1DSPDynamics.cpp
+        ${MACH1SPATIAL_LIBS_PATH}/xcode/include/M1DSP/M1DSPUtilities.cpp
+    )
+endif()
+message(STATUS "M1SDK Lib Path: '${MACH1SPATIAL_LIBS_PATH}'")
 
 # create the executable
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
@@ -165,54 +179,48 @@ add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 #----------------
 
 # include headers
-set(MACH1SPATIAL_INCLUDE_DIRS src libs ${MACH1SPATIAL_LIBS_PATH}/include)
-include_directories(${MACH1SPATIAL_INCLUDE_DIRS})
+if (USE_EXTERNAL_M1SDK)
+    set(MACH1SPATIAL_INCLUDE_DIRS src libs ${MACH1SPATIAL_LIBS_PATH}/include)
+    include_directories(${MACH1SPATIAL_INCLUDE_DIRS})
+endif()
 include_directories(${LIBSNDFILE_INCLUDE_DIRS})
 
-#if(LIBSNDFILE_FOUND)
-#else()
-#    set(LIBSNDFILE_INCLUDE_DIR ./libs/libsndfile/include)
-#    target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${LIBSNDFILE_INCLUDE_DIR})
-#    set(LIBSNDFILE_INCLUDE_DIRS ${LIBSNDFILE_INCLUDE_DIR})
-#    if(WIN32 OR MSVC)
-#        target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/vs/\$(Platform)")
-#        set(LIBSNDFILE_LIBRARY "sndfile.lib")
-#    elseif(APPLE)
-#        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wc++11-extensions")
-#        target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/osx")
-#        set(LIBSNDFILE_LIBRARY "sndfile.a")
-#    else()
-#        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-#        link_directories(${CMAKE_PROJECT_NAME} PRIVATE "./libs/libsndfile/lib/linux")
-#        set(LIBSNDFILE_LIBRARY "sndfile.a")
-#    endif()
-#    set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIBRARY})
-#endif(LIBSNDFILE_FOUND)
-
 # link libraries
-if(WIN32 OR MSVC)
-    add_definitions(-DM1_STATIC)
-    # Change `PATH` to reflect `/MT` or `/MD` as needed!
-    set(MACH1TRANSCODE_LIBRARY_DEBUG ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Debug/Mach1TranscodeCAPId.lib)
-    set(MACH1TRANSCODE_LIBRARY_RELEASE ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Release/Mach1TranscodeCAPI.lib)
-    set(MACH1TRANSCODE_LIBRARY debug ${MACH1TRANSCODE_LIBRARY_DEBUG} optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
-    set(MACH1TRANSCODE_LIBRARIES debug ${MACH1TRANSCODE_LIBRARY_DEBUG} optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
-else()
-    find_library(MACH1TRANSCODE_LIBRARY
-        NAMES Mach1TranscodeCAPI libMach1TranscodeCAPI
-        HINTS ${MACH1SPATIAL_LIBS_PATH}/lib
-    )
-    set(MACH1TRANSCODE_LIBRARIES ${MACH1TRANSCODE_LIBRARY})
+if (USE_EXTERNAL_M1SDK)
+    if(WIN32 OR MSVC OR MINGW)
+        message(STATUS "Adding windows OS flags")
+        add_compile_definitions(M1_STATIC)
+        # Change `PATH` to reflect `/MT` or `/MD` as needed!
+        set(MACH1TRANSCODE_LIBRARY_DEBUG ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Debug/Mach1TranscodeCAPId.lib)
+        set(MACH1TRANSCODE_LIBRARY_RELEASE ${MACH1SPATIAL_LIBS_PATH}/lib/Static/MD/Release/Mach1TranscodeCAPI.lib)
+        set(MACH1TRANSCODE_LIBRARY debug ${MACH1TRANSCODE_LIBRARY_DEBUG} optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
+        set(MACH1TRANSCODE_LIBRARIES debug ${MACH1TRANSCODE_LIBRARY_DEBUG} optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
+    else()
+        if(APPLE)
+            set(MACH1SPATIAL_LIBS_NIX_PATH ${MACH1SPATIAL_LIBS_PATH}/xcode)
+        else()
+            set(MACH1SPATIAL_LIBS_NIX_PATH ${MACH1SPATIAL_LIBS_PATH}/linux)
+        endif()
+        find_library(MACH1TRANSCODE_LIBRARY
+            NAMES Mach1TranscodeCAPI libMach1TranscodeCAPI
+            HINTS ${MACH1SPATIAL_LIBS_NIX_PATH}/lib
+        )
+        set(MACH1TRANSCODE_LIBRARIES ${MACH1TRANSCODE_LIBRARY})
+    endif()
 endif()
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${MACH1TRANSCODE_LIBRARY})
+message(STATUS "Mach1Transcode Library: '${MACH1TRANSCODE_LIBRARY}'")
 
-set(
-    LIBS
-#    ${LIBSNDFILE_LIBRARIES}
-    ${MACH1TRANSCODE_LIBRARIES}
+set(LIBS
     sndfile
     adm
     bw64
 )
+
+if (USE_EXTERNAL_M1SDK)
+    set(LIBS ${LIBS} ${MACH1TRANSCODE_LIBRARIES})
+endif()
+
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LIBS})
 
 #----------------
