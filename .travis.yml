@@ -22,7 +22,7 @@ jobs:
       name: m1-transcode Linux-x86_64
       os: linux
       sudo: required
-      dist: bionic
+      dist: focal
       cache:
         timeout: 1000
         directories:
@@ -68,7 +68,7 @@ jobs:
       os: linux
       sudo: required
       arch: arm64
-      dist: bionic
+      dist: focal
       cache:
         timeout: 1000
         directories:
