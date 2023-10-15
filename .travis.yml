@@ -33,6 +33,7 @@ jobs:
             - ubuntu-toolchain-r-test
           packages:
             - build-essential
+            - g++-7
             - libasound2-dev
             - libvorbis-dev
             - libflac-dev
@@ -79,6 +80,7 @@ jobs:
             - ubuntu-toolchain-r-test
           packages:
             - build-essential
+            - g++-7
             - libasound2-dev
             - libvorbis-dev
             - libflac-dev
