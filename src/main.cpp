@@ -136,18 +136,20 @@ struct audiofileInfo {
     float duration;
 };
 
-audiofileInfo printFileInfo(SndfileHandle file) {
+audiofileInfo printFileInfo(SndfileHandle file, bool displayLength = true) {
     audiofileInfo inputFileInfo;
     std::cout << "Sample Rate:        " << file.samplerate() << std::endl;
     inputFileInfo.sampleRate = file.samplerate();
     int format = file.format() & 0xffff;
     if (format == SF_FORMAT_PCM_16) std::cout << "Bit Depth:          16" << std::endl;
     if (format == SF_FORMAT_PCM_24) std::cout << "Bit Depth:          24" << std::endl;
-    if (format == SF_FORMAT_FLOAT)  std::cout << "Bit Depth:          32" << std::endl;
+    if (format == SF_FORMAT_PCM_32) std::cout << "Bit Depth:          32" << std::endl;
     inputFileInfo.format = format;
     std::cout << "Channels:           " << file.channels() << std::endl;
     inputFileInfo.numberOfChannels = file.channels();
-    std::cout << "Length (sec):       " << (float)file.frames() / (float)file.samplerate() << std::endl;
+    if (displayLength) {
+        std::cout << "Length (sec):       " << (float)file.frames() / (float)file.samplerate() << std::endl;
+    }
     inputFileInfo.duration = (float)file.frames() / (float)file.samplerate();
     std::cout << std::endl;
     
@@ -267,7 +269,7 @@ public:
 
     void printInfo() {
         if (type == SNDFILETYPE_SND) {
-            printFileInfo(outSnd);
+            printFileInfo(outSnd, false);
         }
     }
 
@@ -583,7 +585,7 @@ int main(int argc, char* argv[]) {
 		if (infile[i] && (infile[i]->error() == 0)) {
 			// print input file stats
 			std::cout << "Input File:         " << fNames[i] << std::endl;
-            inputInfo = printFileInfo(*infile[i]);
+            inputInfo = printFileInfo(*infile[i], true);
 			sampleRate = (long)infile[i]->samplerate();
 			//            int inChannels = 0;
 			//            for (int i = 0; i < numInFiles; i++)
@@ -607,7 +609,7 @@ int main(int argc, char* argv[]) {
 	m1transcode.setOutputFormat(outFmt);
 	m1transcode.setLFESub(subChannelIndices, sampleRate);
 
-	// first init of TT points
+	// first init of custom points
 	if (useAudioTimeline) {
 		audioObjects = m1audioTimeline.getAudioObjects();
 		std::vector<Mach1Point3D> points;
@@ -701,7 +703,8 @@ int main(int argc, char* argv[]) {
 			// normalize
 			if (normalize)
 			{
-				std::cout << "Reducing gain by " << m1transcode.level2db(peak) << std::endl;
+				std::cout << "Reducing gain by    " << m1transcode.level2db(peak) << "dB" << std::endl;
+                std::cout << std::endl;
 				masterGain /= peak;
 			}
 
@@ -718,7 +721,7 @@ int main(int argc, char* argv[]) {
 				int inputFormat = infile[0]->format() & 0xffff;
 				if (inputFormat == SF_FORMAT_PCM_16) format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 				if (inputFormat == SF_FORMAT_PCM_24) format = SF_FORMAT_WAV | SF_FORMAT_PCM_24;
-				if (inputFormat == SF_FORMAT_FLOAT)  format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+				if (inputFormat == SF_FORMAT_PCM_32) format = SF_FORMAT_WAV | SF_FORMAT_PCM_32;
 				char outfilestr[1024];
 				if (numOutFiles > 1) {
 					sprintf(outfilestr, "%s_%0d.wav", outfilename, i);
@@ -739,7 +742,7 @@ int main(int argc, char* argv[]) {
                         bitDepth = 16;
                     } else if (inputInfo.format == SF_FORMAT_PCM_24) {
                         bitDepth = 24;
-                    } else if (inputInfo.format == SF_FORMAT_FLOAT) {
+                    } else if (inputInfo.format == SF_FORMAT_PCM_32) {
                         bitDepth = 32;
                     }
                     
