@@ -27,6 +27,8 @@ message(STATUS "CMAKE_MODULE_PATH='${CMAKE_MODULE_PATH}'")
 if (USE_EXTERNAL_M1SDK)
     if(NOT "$ENV{M1SDK_PATH}" STREQUAL "")
         set(MACH1SPATIAL_SDK_PATH "$ENV{M1SDK_PATH}" CACHE PATH "Copied from environment variable")
+    elseif(DEFINED M1SDK_PATH)
+        set(MACH1SPATIAL_SDK_PATH ${M1SDK_PATH} CACHE PATH "Path to M1-SDK directory with source dir.")
     else()
         message(FATAL_ERROR "unexpected: the local M1SDK_PATH environment variable is not set or is empty!")
     endif()
@@ -87,7 +89,9 @@ endif()
 option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static ones (.lib/.a)" OFF)
 
 # download m1-sdk
-include(cmake/fetchM1SDK.cmake)
+if(NOT DEFINED USE_EXTERNAL_M1SDK)
+    include(cmake/fetchM1SDK.cmake)
+endif()
 
 #find_package(SndFile REQUIRED)
 #if(LIBSNDFILE_FOUND)
@@ -187,10 +191,8 @@ add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 #----------------
 
 # include headers
-if (USE_EXTERNAL_M1SDK)
-    set(MACH1SPATIAL_INCLUDE_DIRS src libs ${MACH1SPATIAL_LIBS_PATH}/include)
-    include_directories(${MACH1SPATIAL_INCLUDE_DIRS})
-endif()
+set(MACH1SPATIAL_INCLUDE_DIRS src libs ${MACH1SPATIAL_LIBS_PATH}/include)
+include_directories(${MACH1SPATIAL_INCLUDE_DIRS})
 include_directories(${LIBSNDFILE_INCLUDE_DIRS})
 
 # link libraries
@@ -204,18 +206,13 @@ if (USE_EXTERNAL_M1SDK)
         set(MACH1TRANSCODE_LIBRARY debug ${MACH1TRANSCODE_LIBRARY_DEBUG} optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
         set(MACH1TRANSCODE_LIBRARIES debug ${MACH1TRANSCODE_LIBRARY_DEBUG} optimized ${MACH1TRANSCODE_LIBRARY_RELEASE})
     else()
-        if(APPLE)
-            set(MACH1SPATIAL_LIBS_NIX_PATH ${MACH1SPATIAL_LIBS_PATH}/xcode)
-        else()
-            set(MACH1SPATIAL_LIBS_NIX_PATH ${MACH1SPATIAL_LIBS_PATH}/linux)
-        endif()
         find_library(MACH1TRANSCODE_LIBRARY
-            NAMES Mach1TranscodeCAPI libMach1TranscodeCAPI
-            HINTS ${MACH1SPATIAL_LIBS_NIX_PATH}/lib
+            NAMES Mach1TranscodeCAPI
+            HINTS ${MACH1SPATIAL_LIBS_PATH}
         )
-        set(MACH1TRANSCODE_LIBRARIES ${MACH1TRANSCODE_LIBRARY})
     endif()
 endif()
+
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${MACH1TRANSCODE_LIBRARY})
 message(STATUS "Mach1Transcode Library: '${MACH1TRANSCODE_LIBRARY}'")
 
@@ -226,7 +223,7 @@ set(LIBS
 )
 
 if (USE_EXTERNAL_M1SDK)
-    set(LIBS ${LIBS} ${MACH1TRANSCODE_LIBRARIES})
+    set(LIBS ${LIBS} ${MACH1TRANSCODE_LIBRARY})
 endif()
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LIBS})
