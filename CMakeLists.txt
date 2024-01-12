@@ -208,7 +208,7 @@ if (USE_EXTERNAL_M1SDK)
     else()
         find_library(MACH1TRANSCODE_LIBRARY
             NAMES Mach1TranscodeCAPI
-            HINTS ${MACH1SPATIAL_LIBS_PATH}
+            HINTS ${MACH1SPATIAL_LIBS_PATH}/lib
         )
     endif()
 endif()
