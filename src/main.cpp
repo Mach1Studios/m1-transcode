@@ -469,9 +469,19 @@ int main(int argc, char* argv[]) {
 			}
         } else {
             bool foundInFmt = false;
+            // rename string for new naming convention
+            if (strcmp(inFmtStr, "M1Horizon") == 0) {
+                inFmtStr = "M1Spatial-4";
+            }
+            if (strcmp(inFmtStr, "M1Spatial") == 0) {
+                inFmtStr = "M1Spatial-8";
+            }
             inFmt = m1transcode.getFormatFromString(inFmtStr);
             if (inFmt > 1) { // if format int is 0 or -1 (making it invalid)
                 foundInFmt = true;
+            } else {
+                std::cout << "Please select a valid input format" << std::endl;
+                return -1;
             }
         }
 	} else {
@@ -669,13 +679,13 @@ int main(int argc, char* argv[]) {
 	totalSamples = 0;
 	float peak = 0.0f;
 
-	for (int pass = 1, countPasses = ((normalize || spatialDownmixerMode) ? 2 : 1); pass <= countPasses; pass++)
-	{
-		if (pass == 2) {
-			// Mach1 Spatial Downmixer
-			// Triggered due to correlation of top vs bottom
-			// being higher than threshold
-            if (spatialDownmixerMode && (outFmt == m1transcode.getFormatFromString("M1Spatial") || outFmt == m1transcode.getFormatFromString("M1Spatial-8"))) {
+    for (int pass = 1, countPasses = ((normalize || spatialDownmixerMode) ? 2 : 1); pass <= countPasses; pass++)
+    {
+        if (pass == 2) {
+            // Mach1 Spatial Downmixer
+            // Triggered due to correlation of top vs bottom
+            // being higher than threshold
+            if (spatialDownmixerMode && (outFmt == m1transcode.getFormatFromString("M1Spatial-8"))) {
                 m1transcode.setSpatialDownmixer(corrThreshold);
 				if (m1transcode.getSpatialDownmixerPossibility()) {
 					/*
@@ -747,7 +757,7 @@ int main(int argc, char* argv[]) {
                     }
                     
                     // TODO: remove the hardcoded `adm_metadata.h` file and write inline instructions for creating the metadata to scale for all formats
-                    if (outFmt == m1transcode.getFormatFromString("M1Spatial") || outFmt == m1transcode.getFormatFromString("M1Spatial-8")){
+                    if (outFmt == m1transcode.getFormatFromString("M1Spatial-8")){
                         // setup `chna` metadata chunk
                         /// Creates a description of an 8 objects
                         std::vector<ChannelDescType> channelDescType = { {3}, {3}, {3}, {3}, {3}, {3}, {3}, {3} };
