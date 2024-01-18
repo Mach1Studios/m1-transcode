@@ -147,10 +147,20 @@ audiofileInfo printFileInfo(SndfileHandle file, bool displayLength = true) {
     inputFileInfo.format = format;
     std::cout << "Channels:           " << file.channels() << std::endl;
     inputFileInfo.numberOfChannels = file.channels();
+    
     if (displayLength) {
         std::cout << "Length (sec):       " << (float)file.frames() / (float)file.samplerate() << std::endl;
     }
     inputFileInfo.duration = (float)file.frames() / (float)file.samplerate();
+    
+    if (file.getString(SF_STR_SOFTWARE) != NULL) {
+        std::cout << "Software:           " << file.getString(SF_STR_SOFTWARE) << std::endl;
+    }
+    
+    if (file.getString(SF_STR_COMMENT) != NULL) {
+        std::cout << "Comment:            " << file.getString(SF_STR_COMMENT) << std::endl;
+    }
+    
     std::cout << std::endl;
     
     return inputFileInfo;
@@ -822,6 +832,18 @@ int main(int argc, char* argv[]) {
 				if (outFmt == m1transcode.getFormatFromString("M1Spatial") || outFmt == m1transcode.getFormatFromString("M1Spatial-8")) {
 					outfiles[i].setString(0x05, "mach1spatial-8");
 				}
+                else if (outFmt == m1transcode.getFormatFromString("M1Spatial-12")) {
+                    outfiles[i].setString(0x05, "mach1spatial-12");
+                }
+                else if (outFmt == m1transcode.getFormatFromString("M1Spatial-14")) {
+                    outfiles[i].setString(0x05, "mach1spatial-14");
+                }
+                else if (outFmt == m1transcode.getFormatFromString("M1Spatial-32")) {
+                    outfiles[i].setString(0x05, "mach1spatial-32");
+                }
+                else if (outFmt == m1transcode.getFormatFromString("M1Spatial-60")) {
+                    outfiles[i].setString(0x05, "mach1spatial-60");
+                }
 				else if (outFmt == m1transcode.getFormatFromString("M1Horizon") || outFmt == m1transcode.getFormatFromString("M1Spatial-4")) {
 					outfiles[i].setString(0x05, "mach1horizon-4");
 				}
@@ -844,11 +866,11 @@ int main(int argc, char* argv[]) {
 			sf_count_t firstBuf = 0;
 			float(*inBuf)[Mach1TranscodeMAXCHANS][BUFFERLEN] = (float(*)[Mach1TranscodeMAXCHANS][BUFFERLEN])&(inBuffers[0][0]);
 			for (int file = 0; file < numInFiles; file++) {
-				sf_count_t thisChannels = infile[file]->channels();
+				sf_count_t numChannels = infile[file]->channels();
 
 				// first fill buffer with zeros
 				for (int j = 0; j < BUFFERLEN; j++)
-					for (int k = 0; k < thisChannels; k++) {
+					for (int k = 0; k < numChannels; k++) {
 						(*inBuf)[firstBuf + k][j] = 0;
 					}
 
@@ -856,8 +878,9 @@ int main(int argc, char* argv[]) {
 				if (useAudioTimeline) {
 					startSample = startSampleForAudioObject[file];
 				}
+                
 				if (totalSamples + BUFFERLEN >= startSample) {
-					sf_count_t framesToRead = thisChannels * BUFFERLEN;
+					sf_count_t framesToRead = numChannels * BUFFERLEN;
 
 					// cut samples if the beginning of the offset does not match with the beginning of the buffer
 					sf_count_t offset = 0;
@@ -866,18 +889,18 @@ int main(int argc, char* argv[]) {
 						framesToRead = BUFFERLEN + totalSamples - startSample;
 					}
 
-					sf_count_t framesReaded = infile[file]->read(fileBuffer, framesToRead);
-					samplesRead = framesReaded / thisChannels;
+					sf_count_t framesRead = infile[file]->read(fileBuffer, framesToRead);
+					samplesRead = framesRead / numChannels;
 					// demultiplex into process buffers
 					float *ptrFileBuffer = fileBuffer;
 					for (int j = 0; j < samplesRead; j++) {
-						for (int k = 0; k < thisChannels; k++) {
+						for (int k = 0; k < numChannels; k++) {
 							(*inBuf)[firstBuf + k][offset + j] = *ptrFileBuffer++;
 						}
 					}
 				}
 
-				firstBuf += thisChannels;
+				firstBuf += numChannels;
 			}
 			totalSamples += samplesRead;
 
