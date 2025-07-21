@@ -48,7 +48,7 @@ set(MACH1SPATIAL_INCLUDES
     ${M1_LIB_PATH}/api_common/include
     ${M1_LIB_PATH}/deps
     ${M1_LIB_PATH}/deps/yaml 
-    ${M1_LIB_PATH}/pugixml/src
+    ${M1_LIB_PATH}/deps/pugixml/src
 )
 
 # Include headers
@@ -64,6 +64,8 @@ set(MACH1SPATIAL_SOURCES
     ${M1_LIB_PATH}/api_common/src/Mach1AudioTimelineCAPI.cpp
     ${M1_LIB_PATH}/api_common/src/Mach1AudioTimelineCore.h
     ${M1_LIB_PATH}/api_common/src/Mach1AudioTimelineCore.cpp
+    ${M1_LIB_PATH}/deps/yaml/yaml/Yaml.cpp
+    ${M1_LIB_PATH}/deps/pugixml/src/pugixml.cpp
 )
 
 # Print status information
