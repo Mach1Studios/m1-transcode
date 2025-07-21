@@ -59,6 +59,12 @@ include(cmake/fetchLibADM.cmake)
 # Fetch and configure libbw64
 include(cmake/fetchLibBW64.cmake)
 
+# Add IAMF support for Eclipsa file authoring
+option(ENABLE_IAMF_SUPPORT "Enable IAMF/Eclipsa file support" ON)
+if(ENABLE_IAMF_SUPPORT)
+    include(cmake/fetchLibIAMF.cmake)
+endif()
+
 #----------------
 # Compiler flags
 #----------------
@@ -86,10 +92,13 @@ message(STATUS "CMAKE_CXX_COMPILE_OBJECT='${CMAKE_CXX_COMPILE_OBJECT}'")
 # collect and add source files
 set(SOURCES
     src/main.cpp
-    src/ADMParse.cpp
+    src/adapters/ADMParse.cpp
 )
 
+# Add IAMF integration sources if enabled
+if(ENABLE_IAMF_SUPPORT AND IAMF_FOUND)
     set(SOURCES ${SOURCES}
+        src/adapters/iamf.cpp
     )
 endif()
 

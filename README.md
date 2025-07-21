@@ -18,3 +18,7 @@ Use `-G` cmake generator command for the appropriate target such as:
  - Windows: `cmake -Bbuild -G "Visual Studio 15 2017" -A Win32 -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DENABLE_CPACK=OFF`
  - macOS: `cmake -Bbuild -G Xcode -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DENABLE_CPACK=OFF`
 
+## IAMF/Eclipsa Integration
+
+For detailed usage instructions and integration examples, see:
+- [IAMF Integration Documentation](README_IAMF_INTEGRATION.md)

@@ -29,11 +29,11 @@
 
 #include "sndfile.hh"
 #include "CmdOption.h"
-#include "ADMParse.h"
+#include "adapters/adm_metadata.h"
+#include "adapters/ADMParse.h"
 #include "yaml/Yaml.hpp"
 #include "pugixml.hpp"
 #include "bw64/bw64.hpp"
-#include "adm_metadata.h"
 
 std::vector<Mach1AudioObject> audioObjects;
 std::vector<Mach1Point3D> keypoints;
