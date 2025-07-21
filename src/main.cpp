@@ -31,7 +31,7 @@
 #include "CmdOption.h"
 #include "ADMParse.h"
 #include "yaml/Yaml.hpp"
-#include "xml/pugixml.hpp"
+#include "pugixml.hpp"
 #include "bw64/bw64.hpp"
 #include "adm_metadata.h"
 

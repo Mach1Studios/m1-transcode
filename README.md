@@ -1,4 +1,4 @@
-# Mach1 Transcode Executable (m1-transcde)
+# Mach1 Transcode Executable (m1-transcode)
 m1-transcode executable commandline tool
 
 ## Setup
@@ -25,6 +25,3 @@ Use `-G` cmake generator command for the appropriate target such as:
  - Windows: `cmake -Bbuild -G "Visual Studio 15 2017" -A Win32 -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DENABLE_CPACK=OFF`
  - macOS: `cmake -Bbuild -G Xcode -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DENABLE_CPACK=OFF`
 
-#### Custom M1SDK Path
- - Windows: `cmake -Bbuild -G "Visual Studio 15 2017" -A Win32 -DM1SDK_PATH=C:\git\m1-sdk -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DENABLE_CPACK=OFF`
- - macOS: `cmake -Bbuild -G Xcode -DM1SDK_PATH=/Volumes/git/m1-sdk -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DENABLE_CPACK=OFF`
