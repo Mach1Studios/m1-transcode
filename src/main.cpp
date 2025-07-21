@@ -104,7 +104,7 @@ void printHelp() {
 }
 
 void printFormats() {
-    Mach1Transcode formatLister;
+    Mach1Transcode<float> formatLister;
     formatLister.setInputFormat(formatLister.getFormatFromString("1.0"));
     formatLister.setOutputFormat(formatLister.getFormatFromString("M1Spatial-8"));
     formatLister.processConversionPath();
@@ -318,7 +318,7 @@ void parseFile(SndfileHandle infile, int channels) {
 
 int main(int argc, char* argv[]) {
     Mach1AudioTimeline m1audioTimeline;
-    Mach1Transcode m1transcode;
+    Mach1Transcode<float> m1transcode;
     m1transcode.setCustomPointsSamplerCallback(callbackPointsSampler);
 
 	// locals for cmd line parameters

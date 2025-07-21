@@ -8,8 +8,8 @@ Install and compile other libs
 ## Compiling
 
 ### CMAKE:
- - `cmake -Bbuild`
- - `cmake --build build`
+ - `cmake . -Bbuild`
+ - `cmake . --build build`
 
 ### MANUAL:
  - `cd src/`
