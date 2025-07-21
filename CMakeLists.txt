@@ -49,48 +49,15 @@ option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static on
 
 # download m1-sdk
 include(cmake/fetchM1SDK.cmake)
-endif()
 
-#find_package(SndFile REQUIRED)
-#if(LIBSNDFILE_FOUND)
-#    message(STATUS "LIBSNDFILE_INCLUDE_DIRS='${LIBSNDFILE_INCLUDE_DIRS}'")
-#    message(STATUS "LIBSNDFILE_LIBRARIES=${LIBSNDFILE_LIBRARIES}")
-#    include_directories(${LIBSNDFILE_INCLUDE_DIRS})
-#else()
-    # Include subdirectories only if you manually installed them
-    option(BUILD_SHARED_LIBS "" OFF)
-    option(BUILD_PROGRAMS "" OFF)
-    option(BUILD_EXAMPLES "" OFF)
-    option(ENABLE_CPACK "" OFF)
-    option(BUILD_TESTING "" OFF)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/libsndfile)
-#endif(LIBSNDFILE_FOUND)
+# Fetch and configure libsndfile
+include(cmake/fetchLibSndFile.cmake)
 
-#find_package(adm)
-#if(ADM_FOUND)
-#    message(STATUS "ADM_INCLUDE_DIRS='${ADM_INCLUDE_DIRS}'")
-#    message(STATUS "ADM_LIBRARIES=${ADM_LIBRARIES}")
-#    include_directories(${ADM_INCLUDE_DIRS})
-#else()
-    # Include subdirectories only if you manually installed them
-    option(ADM_EXAMPLES "" OFF)
-    option(ADM_UNIT_TESTS "" OFF)
-    option(ADM_PACKAGE_AND_INSTALL "" OFF)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/libadm)
-#endif()
+# Fetch and configure libadm
+include(cmake/fetchLibADM.cmake)
 
-#find_package(bw64)
-#if(BW64_FOUND)
-#    message(STATUS "BW64_INCLUDE_DIRS='${BW64_INCLUDE_DIRS}'")
-#    message(STATUS "BW64_LIBRARIES=${BW64_LIBRARIES}")
-#    include_directories(${BW64_INCLUDE_DIRS})
-#else()
-    # Include subdirectories only if you manually installed them
-    option(BW64_EXAMPLES "" OFF)
-    option(BW64_UNIT_TESTS "" OFF)
-    option(BW64_PACKAGE_AND_INSTALL "" OFF)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/libbw64)
-#endif()
+# Fetch and configure libbw64
+include(cmake/fetchLibBW64.cmake)
 
 #----------------
 # Compiler flags
@@ -130,8 +97,8 @@ endif()
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 
 # Add M1-SDK sources directly to target (following example pattern)
-if(DEFINED M1_SOURCES)
-    target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${M1_SOURCES})
+if(DEFINED MACH1SPATIAL_SOURCES)
+    target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${MACH1SPATIAL_SOURCES})
 endif()
 
 #----------------
@@ -140,14 +107,16 @@ endif()
 
 # include headers
 include_directories(${LIBSNDFILE_INCLUDE_DIRS})
+include_directories(${LIBADM_INCLUDE_DIRS})
+include_directories(${LIBBW64_INCLUDE_DIRS})
 
-set(PROJECT_INCLUDE_DIRS src libs)
+set(PROJECT_INCLUDE_DIRS src)
 if(DEFINED MACH1SPATIAL_INCLUDES)
     list(APPEND PROJECT_INCLUDE_DIRS ${MACH1SPATIAL_INCLUDES})
 endif()
 include_directories(${PROJECT_INCLUDE_DIRS})
 
-# Link manually installed libraries (from setup.sh)
+# Link libraries
 set(LIBS
     sndfile
     adm

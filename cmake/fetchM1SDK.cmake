@@ -42,20 +42,28 @@ if (NOT m1-sdk_POPULATED)
     endif()
 endif()
 
-# Set up include directories following the example pattern
+# Set up include directories
 set(MACH1SPATIAL_INCLUDES 
     ${M1_LIB_PATH}/api_transcode/include
     ${M1_LIB_PATH}/api_common/include
     ${M1_LIB_PATH}/deps
+    ${M1_LIB_PATH}/deps/yaml 
+    ${M1_LIB_PATH}/pugixml/src
 )
 
 # Include headers
 include_directories(${MACH1SPATIAL_INCLUDES})
 
 # Set up M1 source files that need to be included
-set(M1_SOURCES
+set(MACH1SPATIAL_SOURCES
+    ${M1_LIB_PATH}/deps/M1DSP/M1DSPUtilities.h
+    ${M1_LIB_PATH}/deps/M1DSP/M1DSPFilters.h
     ${M1_LIB_PATH}/deps/M1DSP/M1DSPUtilities.cpp
     ${M1_LIB_PATH}/deps/M1DSP/M1DSPFilters.cpp
+    ${M1_LIB_PATH}/api_common/include/Mach1AudioTimeline.cpp
+    ${M1_LIB_PATH}/api_common/src/Mach1AudioTimelineCAPI.cpp
+    ${M1_LIB_PATH}/api_common/src/Mach1AudioTimelineCore.h
+    ${M1_LIB_PATH}/api_common/src/Mach1AudioTimelineCore.cpp
 )
 
 # Print status information
