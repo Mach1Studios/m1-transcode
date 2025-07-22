@@ -35,6 +35,10 @@
 #include "pugixml.hpp"
 #include "bw64/bw64.hpp"
 
+#ifdef HAVE_LIBIAMF
+#include "adapters/iamf.h"
+#endif
+
 std::vector<Mach1AudioObject> audioObjects;
 std::vector<Mach1Point3D> keypoints;
 
@@ -575,6 +579,38 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	std::cout << std::endl;
+
+#ifdef HAVE_LIBIAMF
+	// Check for IAMF output file extension and use IAMF workflow
+	if (outfilename != NULL) {
+		std::string outfile_str(outfilename);
+		size_t dot_pos = outfile_str.find_last_of(".");
+		if (dot_pos != std::string::npos) {
+			std::string extension = outfile_str.substr(dot_pos);
+			if (extension == ".iamf") {
+				std::cout << "IAMF output detected - using IAMF workflow" << std::endl;
+				std::cout << std::endl;
+				
+				// Call the complete IAMF workflow
+				int result = mach1_to_iamf_complete_workflow(
+					infilename,      // input file
+					inFmtStr,        // input format
+					outFmtStr,       // output format  
+					outfilename      // output IAMF file
+				);
+				
+				if (result == 0) {
+					std::cout << "IAMF conversion completed successfully!" << std::endl;
+				} else {
+					std::cerr << "IAMF conversion failed with error: " << result << std::endl;
+					return result;
+				}
+				
+				return 0; // Exit successfully, skip WAV processing
+			}
+		}
+	}
+#endif
 
 	//=================================================================
 	// initialize inputs, outputs and components

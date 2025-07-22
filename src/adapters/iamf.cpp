@@ -6,6 +6,7 @@
 #include "iamf.h"
 #include "Mach1Transcode.h"
 #include "Mach1AudioTimeline.h"
+#include "sndfile.hh"
 
 #include <cstring>
 #include <cstdlib>
@@ -92,38 +93,78 @@ int iamf_eclipsa_write_header(IAMFEclipsaContext* ctx, const char* output_path)
         return -2;
     }
     
-    // Write basic IAMF file header
-    // This is a simplified version - real IAMF has complex OBU structure
-    uint8_t iamf_header[] = {
-        'I', 'A', 'M', 'F',  // Magic number
-        0x01, 0x00,          // Version
-        0x00, 0x00           // Flags
+    // Write proper IAMF OBUs according to specification
+    
+    // 1. Write IAMF Sequence Header OBU (type 31)
+    uint8_t seq_header[] = {
+        0xF8,              // OBU header: type=31, extension=0, has_size=1 (matches real IAMF)
+        0x06,              // OBU size (6 bytes payload)
+        0x69, 0x61, 0x6d, 0x66, // Four character code "iamf" in correct byte order
+        0x00, 0x00         // Primary profile=0, additional profile=0
     };
     
-    if (fwrite(iamf_header, sizeof(iamf_header), 1, internal_ctx->output_file) != 1) {
-        std::cerr << "Failed to write IAMF header" << std::endl;
+    if (fwrite(seq_header, sizeof(seq_header), 1, internal_ctx->output_file) != 1) {
+        std::cerr << "Failed to write IAMF sequence header" << std::endl;
         return -3;
     }
     
-    // Write codec config OBU (simplified)
-    // In real implementation, this would use proper IAMF OBU structure
+    // 2. Write Codec Config OBU (type 0)  
     uint8_t codec_config[] = {
-        0x00,  // OBU type: Codec Config
-        0x10,  // OBU size (example)
-        // Codec specific data would go here
-        (uint8_t)(ctx->audio_config.sample_rate & 0xFF),
+        0x02,              // OBU header: type=0, extension=0, has_size=1
+        0x17,              // OBU size (23 bytes payload)
+        0x00, 0x00, 0x00, 0x00,  // Codec config ID = 0
+        'i', 'p', 'c', 'm',      // Four character code "ipcm" (integer PCM)
+        0x00, 0x00, 0x00, 0x00,  // Number of samples per frame (0 = variable)
+        0x00, 0x00,              // Audio roll distance = 0
+        // PCM specific config (8 bytes)
+        (uint8_t)ctx->audio_config.bit_depth,  // Sample size (16)
+        (uint8_t)(ctx->audio_config.sample_rate & 0xFF),         // Sample rate (little endian)
         (uint8_t)((ctx->audio_config.sample_rate >> 8) & 0xFF),
         (uint8_t)((ctx->audio_config.sample_rate >> 16) & 0xFF),
         (uint8_t)((ctx->audio_config.sample_rate >> 24) & 0xFF),
-        (uint8_t)ctx->audio_config.num_channels,
-        (uint8_t)ctx->audio_config.bit_depth,
-        // Padding
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        0x00, 0x00, 0x00     // Reserved
     };
     
     if (fwrite(codec_config, sizeof(codec_config), 1, internal_ctx->output_file) != 1) {
         std::cerr << "Failed to write codec config" << std::endl;
         return -4;
+    }
+    
+    // 3. Write Audio Element OBU (type 1)
+    uint8_t audio_element[] = {
+        0x06,              // OBU header: type=1, extension=0, has_size=1
+        0x14,              // OBU size (20 bytes payload)
+        0x00, 0x00, 0x00, 0x00,  // Audio element ID = 0
+        0x00,              // Audio element type = AUDIO_ELEMENT_CHANNEL_BASED
+        0x00, 0x00, 0x00, 0x00,  // Reserved
+        0x00, 0x00, 0x00, 0x00,  // Codec config ID = 0 (matches our codec config)
+        (uint8_t)ctx->audio_config.num_channels,  // Number of channels
+        0x00,              // Audio element config size = 0 (no additional config)
+        0x00, 0x00, 0x00   // Reserved/padding
+    };
+    
+    if (fwrite(audio_element, sizeof(audio_element), 1, internal_ctx->output_file) != 1) {
+        std::cerr << "Failed to write audio element" << std::endl;
+        return -5;
+    }
+    
+    // 4. Write Mix Presentation OBU (type 2)
+    uint8_t mix_presentation[] = {
+        0x0A,              // OBU header: type=2, extension=0, has_size=1
+        0x20,              // OBU size (32 bytes payload)
+        0x00, 0x00, 0x00, 0x00,  // Mix presentation ID = 0
+        0x00, 0x00, 0x00, 0x01,  // Count label = 1
+        0x00, 0x00, 0x00, 0x00,  // Language tag size = 0 (no language)
+        0x00, 0x00, 0x00, 0x01,  // Count sub-mixes = 1
+        0x00, 0x00, 0x00, 0x00,  // Sub-mix ID = 0
+        0x00, 0x00, 0x00, 0x01,  // Count audio elements = 1
+        0x00, 0x00, 0x00, 0x00,  // Audio element ID = 0 (matches our audio element)
+        0x00, 0x00, 0x00, 0x00   // Element mix config (no mixing parameters)
+    };
+    
+    if (fwrite(mix_presentation, sizeof(mix_presentation), 1, internal_ctx->output_file) != 1) {
+        std::cerr << "Failed to write mix presentation" << std::endl;
+        return -6;
     }
     
     internal_ctx->header_written = true;
@@ -152,12 +193,17 @@ int iamf_eclipsa_encode_frame(IAMFEclipsaContext* ctx,
     size_t sample_size = ctx->audio_config.bit_depth / 8;
     size_t frame_size = num_samples * ctx->audio_config.num_channels * sample_size;
     
-    // Write audio frame OBU (simplified)
+    // Write audio frame OBU (type 3)
+    // Calculate total OBU size (frame header + audio data)
+    size_t obu_payload_size = 8 + frame_size;  // 8 bytes header + audio data
     uint8_t frame_header[] = {
-        0x01,  // OBU type: Audio Frame
-        (uint8_t)(frame_size & 0xFF),  // Frame size (low byte)
-        (uint8_t)((frame_size >> 8) & 0xFF),  // Frame size (high byte)
-        (uint8_t)(internal_ctx->sequence_number & 0xFF),  // Sequence number
+        0x0E,  // OBU header: type=3, extension=0, has_size=1
+        (uint8_t)(obu_payload_size & 0xFF),           // OBU size (low byte)
+        (uint8_t)((obu_payload_size >> 8) & 0xFF),    // OBU size (high byte)
+        0x00, 0x00, 0x00, 0x00,  // Audio element ID = 0
+        (uint8_t)(internal_ctx->sequence_number & 0xFF),  // Sequence number (low byte)
+        (uint8_t)((internal_ctx->sequence_number >> 8) & 0xFF),  // Sequence number (high byte)
+        0x00, 0x00               // Reserved
     };
     
     if (fwrite(frame_header, sizeof(frame_header), 1, internal_ctx->output_file) != 1) {
@@ -311,6 +357,13 @@ int mach1_to_iamf_element_config(const char* mach1_format,
         element_config->is_scene_based = false;
         element_config->ambisonics_mode = 0;
     }
+    else if (strcmp(mach1_format, "stereo") == 0 || strcmp(mach1_format, "2.0") == 0 || strcmp(mach1_format, "ACNSN3D") == 0) {
+        element_config->audio_element_id = 6;
+        element_config->num_layers = 1;
+        element_config->num_channels_per_layer = 2;  // Stereo
+        element_config->is_scene_based = false;
+        element_config->ambisonics_mode = 0;
+    }
     else {
         std::cerr << "Unsupported Mach1 format: " << mach1_format << std::endl;
         return -2;
@@ -362,6 +415,9 @@ int get_recommended_iamf_config(const char* output_format,
     else if (strcmp(output_format, "5.1") == 0) {
         audio_config->num_channels = 6;
     }
+    else if (strcmp(output_format, "stereo") == 0 || strcmp(output_format, "2.0") == 0 || strcmp(output_format, "ACNSN3D") == 0) {
+        audio_config->num_channels = 2;  // Stereo
+    }
     else {
         audio_config->num_channels = 2;  // Default to stereo
     }
@@ -405,15 +461,121 @@ int mach1_to_iamf_complete_workflow(const char* input_file,
         return result;
     }
     
-    // TODO: Here you would integrate with your existing Mach1Transcode workflow
-    // For now, this is a placeholder showing the structure
+    // Load and process input audio file through Mach1Transcode
     
-    std::cout << "TODO: Integrate with actual Mach1Transcode processing here" << std::endl;
-    std::cout << "This would involve:" << std::endl;
-    std::cout << "1. Loading input file with your existing audio loading code" << std::endl;
-    std::cout << "2. Setting up Mach1Transcode with input_format -> output_format" << std::endl;
-    std::cout << "3. Processing audio frames through Mach1Transcode" << std::endl;
-    std::cout << "4. Encoding each processed frame to IAMF using iamf_eclipsa_encode_frame" << std::endl;
+    // Load input file
+    SndfileHandle infile(input_file);
+    if (infile.error() != 0) {
+        std::cerr << "Failed to open input file: " << input_file << std::endl;
+        iamf_eclipsa_cleanup(&iamf_ctx);
+        return -10;
+    }
+    
+    std::cout << "Processing audio file:" << std::endl;
+    std::cout << "  Channels: " << infile.channels() << std::endl;
+    std::cout << "  Sample Rate: " << infile.samplerate() << " Hz" << std::endl;
+    std::cout << "  Frames: " << infile.frames() << std::endl;
+    
+    // Initialize Mach1Transcode
+    Mach1Transcode<float> m1transcode;
+    
+    // Convert format strings to format IDs
+    int inFmt = m1transcode.getFormatFromString(input_format);
+    int outFmt = m1transcode.getFormatFromString(output_format);
+    
+    if (inFmt < 0) {
+        std::cerr << "Unsupported input format: " << input_format << std::endl;
+        iamf_eclipsa_cleanup(&iamf_ctx);
+        return -11;
+    }
+    
+    if (outFmt < 0) {
+        std::cerr << "Unsupported output format: " << output_format << std::endl;
+        iamf_eclipsa_cleanup(&iamf_ctx);
+        return -12;
+    }
+    
+    m1transcode.setInputFormat(inFmt);
+    m1transcode.setOutputFormat(outFmt);
+    
+    if (!m1transcode.processConversionPath()) {
+        std::cerr << "Can't find conversion path between formats!" << std::endl;
+        iamf_eclipsa_cleanup(&iamf_ctx);
+        return -13;
+    }
+    
+    // Set up audio processing buffers
+    const int BUFFERLEN = 1024;
+    const int MAX_CHANNELS = 64;
+    
+    int inChannels = infile.channels();
+    int outChannels = m1transcode.getOutputNumChannels();
+    
+    // Audio buffers
+    float fileBuffer[MAX_CHANNELS * BUFFERLEN];
+    float inBuffers[MAX_CHANNELS][BUFFERLEN];
+    float outBuffers[MAX_CHANNELS][BUFFERLEN];
+    float *inPtrs[MAX_CHANNELS];
+    float *outPtrs[MAX_CHANNELS];
+    
+    for (int i = 0; i < MAX_CHANNELS; i++) {
+        inPtrs[i] = inBuffers[i];
+        outPtrs[i] = outBuffers[i];
+        memset(inBuffers[i], 0, sizeof(inBuffers[i]));
+        memset(outBuffers[i], 0, sizeof(outBuffers[i]));
+    }
+    
+    std::cout << "Conversion path: " << input_format << " -> " << output_format << std::endl;
+    std::cout << "Input channels: " << inChannels << ", Output channels: " << outChannels << std::endl;
+    
+    // Process audio in chunks
+    sf_count_t totalSamples = 0;
+    sf_count_t numBlocks = infile.frames() / BUFFERLEN;
+    
+    for (sf_count_t block = 0; block <= numBlocks; block++) {
+        // Read audio data
+        sf_count_t framesToRead = inChannels * BUFFERLEN;
+        sf_count_t framesRead = infile.read(fileBuffer, framesToRead);
+        sf_count_t samplesRead = framesRead / inChannels;
+        
+        if (samplesRead == 0) break;
+        
+        // Demultiplex into process buffers
+        float *ptrFileBuffer = fileBuffer;
+        for (int j = 0; j < samplesRead; j++) {
+            for (int k = 0; k < inChannels; k++) {
+                inBuffers[k][j] = *ptrFileBuffer++;
+            }
+        }
+        
+        // Process through Mach1Transcode
+        m1transcode.processConversion(inPtrs, outPtrs, (int)samplesRead);
+        
+        // Multiplex output channels for IAMF
+        for (int j = 0; j < samplesRead; j++) {
+            for (int k = 0; k < outChannels; k++) {
+                fileBuffer[j * outChannels + k] = outBuffers[k][j];
+            }
+        }
+        
+        // Encode frame to IAMF
+        result = iamf_eclipsa_encode_frame(&iamf_ctx, fileBuffer, samplesRead, nullptr);
+        if (result != 0) {
+            std::cerr << "Failed to encode IAMF frame: " << result << std::endl;
+            iamf_eclipsa_cleanup(&iamf_ctx);
+            return result;
+        }
+        
+        totalSamples += samplesRead;
+        
+        // Progress indication
+        if (block % 100 == 0) {
+            float progress = (float)block / (float)numBlocks * 100.0f;
+            std::cout << "\rProgress: " << (int)progress << "% (" << totalSamples << " samples)" << std::flush;
+        }
+    }
+    
+    std::cout << std::endl << "Audio processing completed. Total samples: " << totalSamples << std::endl;
     
     // Finalize IAMF file
     result = iamf_eclipsa_finalize(&iamf_ctx);
