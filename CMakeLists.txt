@@ -107,13 +107,16 @@ add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 
 # Add IAMF validation tool
 if(ENABLE_IAMF_SUPPORT AND IAMF_FOUND)
-    add_executable(iamf_validator iamf_validator.cpp)
-    target_include_directories(iamf_validator PRIVATE ${PROJECT_INCLUDE_DIRS})
-    if(TARGET iamf_simple)
-        target_link_libraries(iamf_validator PRIVATE iamf_simple)
-    elseif(IAMF_LIBRARIES)
-        target_link_libraries(iamf_official_validator PRIVATE ${IAMF_LIBRARIES})
-    endif()
+    # Temporarily disable validator due to linking issues
+    # add_executable(iamf_validator iamf_validator.cpp)
+    # target_include_directories(iamf_validator PRIVATE ${PROJECT_INCLUDE_DIRS})
+    # target_compile_definitions(iamf_validator PRIVATE ${PROJECT_COMPILE_DEFINITIONS})
+    # target_link_libraries(iamf_validator PRIVATE iamf_simple)
+    # if(TARGET iamf_simple)
+    #     target_link_libraries(iamf_validator PRIVATE iamf_simple)
+    # elseif(IAMF_LIBRARIES)
+    #     target_link_libraries(iamf_official_validator PRIVATE ${IAMF_LIBRARIES})
+    # endif()
 endif()
 
 # Add M1-SDK sources directly to target (following example pattern)

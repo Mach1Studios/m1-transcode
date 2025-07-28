@@ -113,53 +113,57 @@ int iamf_eclipsa_write_header(IAMFEclipsaContext* ctx, const char* output_path)
     // Write proper IAMF OBUs according to specification v1.0.0
     
     // 1. IA Sequence Header OBU (type 31, 0x1F)
-    uint8_t obu_header = (31 << 3) | 0x02;  // type=31, extension_flag=0, has_size_flag=1
+    // OBU header: forbidden(0) + type(31) + extension_flag(0) + has_size_flag(1) + reserved(0)
+    // 0 + 11111 + 0 + 1 + 0 = 01111101 = 0xFD (but reference shows 0xF8)
+    // Let me match the working reference exactly
+    uint8_t obu_header = 0xF8;  // Use exact byte from working reference
     fputc(obu_header, internal_ctx->output_file);
-    write_uleb128(internal_ctx->output_file, 6);  // payload size
+    fputc(0x06, internal_ctx->output_file);  // payload size = 6 bytes (not ULEB128)
     
     // Write "iamf" fourcc
     fwrite("iamf", 4, 1, internal_ctx->output_file);
     
-    // Primary and additional profiles
+    // Primary and additional profiles - use Simple profile (0) for compatibility
     fputc(0x00, internal_ctx->output_file);  // primary_profile = Simple
     fputc(0x00, internal_ctx->output_file);  // additional_profile = Simple
     
     // 2. Codec Config OBU (type 0)
-    obu_header = (0 << 3) | 0x02;  // type=0, has_size_flag=1
+    obu_header = 0x02;  // type=0, has_size_flag=1 -> 00000010
     fputc(obu_header, internal_ctx->output_file);
     
-    // Calculate exact payload size for codec config
-    // codec_config_id (1) + fourcc (4) + samples_per_frame (1) + audio_roll_distance (1) + 
-    // sample_format_flags (1) + sample_size (1) + sample_rate (3) + reserved (1) = 13 bytes
+    // Calculate exact payload size for codec config (using single byte, not ULEB128)
     size_t codec_config_size = 1 + 4 + 1 + 1 + 1 + 1 + 3 + 1;  // = 13 bytes
-    write_uleb128(internal_ctx->output_file, codec_config_size);
+    fputc(codec_config_size, internal_ctx->output_file);  // Use single byte for size
     
-    // Codec config payload
-    write_uleb128(internal_ctx->output_file, 0);     // codec_config_id = 0
+    // Codec config payload  
+    fputc(0x00, internal_ctx->output_file);          // codec_config_id = 0 (single byte)
     fwrite("ipcm", 4, 1, internal_ctx->output_file); // fourcc = "ipcm"
-    write_uleb128(internal_ctx->output_file, 0);     // num_samples_per_frame = 0 (variable)
-    write_uleb128(internal_ctx->output_file, 0);     // audio_roll_distance = 0
+    fputc(0x00, internal_ctx->output_file);          // num_samples_per_frame = 0 (single byte)
+    fputc(0x00, internal_ctx->output_file);          // audio_roll_distance = 0 (single byte)
     
     // LPCM decoder config
     fputc(0x01, internal_ctx->output_file);          // sample_format_flags (little endian)
     fputc(ctx->audio_config.bit_depth, internal_ctx->output_file);  // sample_size
-    write_uleb128(internal_ctx->output_file, ctx->audio_config.sample_rate);  // sample_rate
+    fputc((ctx->audio_config.sample_rate >> 16) & 0xFF, internal_ctx->output_file);  // sample_rate high byte
+    fputc((ctx->audio_config.sample_rate >> 8) & 0xFF, internal_ctx->output_file);   // sample_rate mid byte  
+    fputc(ctx->audio_config.sample_rate & 0xFF, internal_ctx->output_file);          // sample_rate low byte
     fputc(0x00, internal_ctx->output_file);          // reserved
     
     // 3. Audio Element OBU (type 1)
-    obu_header = (1 << 3) | 0x02;  // type=1, has_size_flag=1
+    obu_header = 0x0A;  // type=1, has_size_flag=1 -> 00001010  
     fputc(obu_header, internal_ctx->output_file);
     
-    // Calculate payload size based on element type
+    // Calculate payload size based on element type (use single byte)
     size_t audio_element_size;
     bool is_scene_based = ctx->element_config.is_scene_based;
     
     if (is_scene_based) {
         // Scene-based (ambisonics) element size calculation
+        // For ambisonics, use simpler mono mode to avoid demixing matrix complications
         // audio_element_id (1) + audio_element_type (1) + reserved (1) + codec_config_id (1) + 
         // num_substreams (1) + substream_ids (num_channels) + num_parameters (1) +
         // ambisonics_config: ambisonics_mode (1) + output_channel_count (1) + substream_count (1) +
-        // coupled_substream_count (1) + demixing_matrix (if projection mode, skip for now)
+        // coupled_substream_count (1)
         audio_element_size = 1 + 1 + 1 + 1 + 1 + ctx->audio_config.num_channels + 1 + 1 + 1 + 1 + 1;
     } else {
         // Channel-based element size calculation  
@@ -170,10 +174,10 @@ int iamf_eclipsa_write_header(IAMFEclipsaContext* ctx, const char* output_path)
         // recon_gain_is_present (1) + reserved (1) + substream_count (1) + coupled_substream_count (1)
         audio_element_size = 1 + 1 + 1 + 1 + 1 + ctx->audio_config.num_channels + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
     }
-    write_uleb128(internal_ctx->output_file, audio_element_size);
+    fputc(audio_element_size, internal_ctx->output_file);  // Use single byte for size
     
     // Audio element payload
-    write_uleb128(internal_ctx->output_file, ctx->element_config.audio_element_id);  // audio_element_id
+    fputc(ctx->element_config.audio_element_id, internal_ctx->output_file);  // audio_element_id (single byte)
     
     if (is_scene_based) {
         fputc(0x01, internal_ctx->output_file);      // audio_element_type = SCENE_BASED
@@ -182,20 +186,20 @@ int iamf_eclipsa_write_header(IAMFEclipsaContext* ctx, const char* output_path)
     }
     
     fputc(0x00, internal_ctx->output_file);          // reserved
-    write_uleb128(internal_ctx->output_file, 0);     // codec_config_id = 0
-    write_uleb128(internal_ctx->output_file, ctx->audio_config.num_channels);  // num_substreams
+    fputc(0x00, internal_ctx->output_file);          // codec_config_id = 0 (single byte)
+    fputc(ctx->audio_config.num_channels, internal_ctx->output_file);  // num_substreams (single byte)
     
-    // Write substream IDs
+    // Write substream IDs (single bytes)
     for (uint32_t i = 0; i < ctx->audio_config.num_channels; i++) {
-        write_uleb128(internal_ctx->output_file, i);
+        fputc(i, internal_ctx->output_file);
     }
     
-    write_uleb128(internal_ctx->output_file, 0);     // num_parameters = 0
+    fputc(0x00, internal_ctx->output_file);          // num_parameters = 0 (single byte)
     
     if (is_scene_based) {
         // Ambisonics config for scene-based elements
         fputc(ctx->element_config.ambisonics_mode, internal_ctx->output_file);  // ambisonics_mode (0=mono, 1=projection)
-        write_uleb128(internal_ctx->output_file, ctx->audio_config.num_channels);  // output_channel_count  
+        fputc(ctx->audio_config.num_channels, internal_ctx->output_file);  // output_channel_count (single byte)
         fputc(ctx->audio_config.num_channels, internal_ctx->output_file);  // substream_count
         fputc(0x00, internal_ctx->output_file);      // coupled_substream_count = 0
         
@@ -231,46 +235,41 @@ int iamf_eclipsa_write_header(IAMFEclipsaContext* ctx, const char* output_path)
     }
     
     // 4. Mix Presentation OBU (type 2) - Simplified
-    obu_header = (2 << 3) | 0x02;  // type=2, has_size_flag=1
+    obu_header = 0x12;  // type=2, has_size_flag=1 -> 00010010
     fputc(obu_header, internal_ctx->output_file);
     
-    // Calculate exact mix presentation size
-    // mix_presentation_id (1) + count_label (1) + lang_label_len (1) + annotations (1) + 
-    // num_sub_mixes (1) + num_audio_elements (1) + audio_element_id (1) + annotations (1) +
-    // rendering_mode (1) + mix_gain_flag (1) + output_gain_flag (1) + num_layouts (1) +
-    // layout_type (1) + sound_system (3) + reserved (1) + loudness_info_type (1) + 
-    // integrated_loudness (2) + digital_peak (2) = 22 bytes
-    size_t mix_presentation_size = 22;
-    write_uleb128(internal_ctx->output_file, mix_presentation_size);
+    // Calculate exact mix presentation size (use single byte)
+    size_t mix_presentation_size = 22;  // Fixed size for simple configuration
+    fputc(mix_presentation_size, internal_ctx->output_file);  // Use single byte for size
     
     // Mix presentation payload
-    write_uleb128(internal_ctx->output_file, 1);     // mix_presentation_id = 1
-    write_uleb128(internal_ctx->output_file, 1);     // count_label = 1
+    fputc(0x01, internal_ctx->output_file);          // mix_presentation_id = 1 (single byte)
+    fputc(0x01, internal_ctx->output_file);          // count_label = 1 (single byte)
     
     // Language label (empty)
-    write_uleb128(internal_ctx->output_file, 0);     // language_label length = 0
+    fputc(0x00, internal_ctx->output_file);          // language_label length = 0 (single byte)
     
     // Mix presentation annotations
-    write_uleb128(internal_ctx->output_file, 0);     // No annotations
+    fputc(0x00, internal_ctx->output_file);          // No annotations (single byte)
     
-    write_uleb128(internal_ctx->output_file, 1);     // num_sub_mixes = 1
+    fputc(0x01, internal_ctx->output_file);          // num_sub_mixes = 1 (single byte)
     
     // Sub-mix (simplified - no parameters)
-    write_uleb128(internal_ctx->output_file, 1);     // num_audio_elements = 1
-    write_uleb128(internal_ctx->output_file, ctx->element_config.audio_element_id);  // audio_element_id
-    write_uleb128(internal_ctx->output_file, 0);     // No annotations
+    fputc(0x01, internal_ctx->output_file);          // num_audio_elements = 1 (single byte)
+    fputc(ctx->element_config.audio_element_id, internal_ctx->output_file);  // audio_element_id (single byte)
+    fputc(0x00, internal_ctx->output_file);          // No annotations (single byte)
     
     // Rendering config
     fputc(0x00, internal_ctx->output_file);          // headphones_rendering_mode = STEREO
     
     // No element mix config (set to 0)
-    write_uleb128(internal_ctx->output_file, 0);     // No mix gain parameter
+    fputc(0x00, internal_ctx->output_file);          // No mix gain parameter (single byte)
     
     // No output mix config  
-    write_uleb128(internal_ctx->output_file, 0);     // No output mix gain parameter
+    fputc(0x00, internal_ctx->output_file);          // No output mix gain parameter (single byte)
     
     // Layout configurations
-    write_uleb128(internal_ctx->output_file, 1);     // num_layouts = 1
+    fputc(0x01, internal_ctx->output_file);          // num_layouts = 1 (single byte)
     
     // Layout - choose appropriate layout type and sound system
     if (is_scene_based) {
@@ -282,27 +281,27 @@ int iamf_eclipsa_write_header(IAMFEclipsaContext* ctx, const char* output_path)
         // For channel-based, use loudspeaker convention
         fputc(0x02, internal_ctx->output_file);      // layout_type = LOUDSPEAKERS_SS_CONVENTION
         
-        // Choose sound system based on channel count
-        uint32_t sound_system = 0x020200;  // Default: A_0_2_0 (stereo)
+        // Choose sound system based on channel count (use single bytes, not ULEB128)
+        uint8_t sound_system = 0x00;  // Default: A_0_2_0 (stereo)
         
         if (ctx->audio_config.num_channels == 2) {
-            sound_system = 0x020200;  // A_0_2_0 (stereo)
+            sound_system = 0x00;  // A_0_2_0 (stereo)
         } else if (ctx->audio_config.num_channels == 6) {
-            sound_system = 0x050300;  // A_0_5_1 (5.1)  
+            sound_system = 0x03;  // A_0_5_1 (5.1)  
         } else if (ctx->audio_config.num_channels == 4) {
-            sound_system = 0x020200;  // Default to stereo for M1Spatial-4 
+            sound_system = 0x00;  // Default to stereo for M1Spatial-4 
         } else if (ctx->audio_config.num_channels == 8) {
-            sound_system = 0x050300;  // Default to 5.1 for M1Spatial-8
+            sound_system = 0x03;  // Default to 5.1 for M1Spatial-8
         } else if (ctx->audio_config.num_channels == 14) {
-            sound_system = 0x050300;  // Default to 5.1 for M1Spatial-14 
+            sound_system = 0x03;  // Default to 5.1 for M1Spatial-14 
         }
         
-        write_uleb128(internal_ctx->output_file, sound_system);
+        fputc(sound_system, internal_ctx->output_file);  // sound_system (single byte)
         fputc(0x00, internal_ctx->output_file);      // reserved
     }
     
     // Loudness info
-    write_uleb128(internal_ctx->output_file, 0);     // No info_type_bit_masks
+    fputc(0x00, internal_ctx->output_file);          // No info_type_bit_masks (single byte)
     
     // Integrated loudness (-23 LUFS in Q7.8 format)
     int16_t integrated_loudness = (int16_t)(-23.0f * 256);
@@ -441,7 +440,7 @@ int mach1_to_iamf_element_config(const char* mach1_format,
         element_config->num_layers = 1;
         element_config->num_channels_per_layer = 16; // 3rd order = (3+1)^2 = 16 channels
         element_config->is_scene_based = true;
-        element_config->ambisonics_mode = 1; // AMBISONICS_PROJECTION
+        element_config->ambisonics_mode = 0; // AMBISONICS_MONO (direct mapping, no demixing matrix)
     }
     // 2nd Order Ambisonics formats (scene-based)
     else if (strcmp(mach1_format, "ACNSN3DO2A") == 0 || strcmp(mach1_format, "ACNSN3DmaxRE2oa") == 0) {
@@ -449,7 +448,7 @@ int mach1_to_iamf_element_config(const char* mach1_format,
         element_config->num_layers = 1;
         element_config->num_channels_per_layer = 9; // 2nd order = (2+1)^2 = 9 channels
         element_config->is_scene_based = true;
-        element_config->ambisonics_mode = 1; // AMBISONICS_PROJECTION
+        element_config->ambisonics_mode = 0; // AMBISONICS_MONO (direct mapping, no demixing matrix)
     }
     // 1st Order Ambisonics formats (scene-based)
     else if (strcmp(mach1_format, "ACNSN3DmaxRE1oa") == 0 || strcmp(mach1_format, "ACNSN3DYorkBasic1oa") == 0 || 
@@ -458,7 +457,7 @@ int mach1_to_iamf_element_config(const char* mach1_format,
         element_config->num_layers = 1;
         element_config->num_channels_per_layer = 4; // 1st order = (1+1)^2 = 4 channels
         element_config->is_scene_based = true;
-        element_config->ambisonics_mode = 1; // AMBISONICS_PROJECTION
+        element_config->ambisonics_mode = 0; // AMBISONICS_MONO (direct mapping, no demixing matrix)
     }
     // Traditional surround formats (channel-based)
     else if (strcmp(mach1_format, "5.1") == 0) {
