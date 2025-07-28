@@ -60,7 +60,9 @@ set(MACH1SPATIAL_SOURCES
     ${M1_LIB_PATH}/deps/M1DSP/M1DSPFilters.h
     ${M1_LIB_PATH}/deps/M1DSP/M1DSPUtilities.cpp
     ${M1_LIB_PATH}/deps/M1DSP/M1DSPFilters.cpp
+    ${M1_LIB_PATH}/api_common/include/Mach1AudioTimeline.h
     ${M1_LIB_PATH}/api_common/include/Mach1AudioTimeline.cpp
+    ${M1_LIB_PATH}/api_common/include/Mach1AudioTimelineCAPI.h
     ${M1_LIB_PATH}/api_common/src/Mach1AudioTimelineCAPI.cpp
     ${M1_LIB_PATH}/api_common/src/Mach1AudioTimelineCore.h
     ${M1_LIB_PATH}/api_common/src/Mach1AudioTimelineCore.cpp

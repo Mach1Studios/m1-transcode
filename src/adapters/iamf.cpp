@@ -150,16 +150,37 @@ int iamf_eclipsa_write_header(IAMFEclipsaContext* ctx, const char* output_path)
     obu_header = (1 << 3) | 0x02;  // type=1, has_size_flag=1
     fputc(obu_header, internal_ctx->output_file);
     
-    // Calculate exact audio element payload size
-    // audio_element_id (1) + audio_element_type (1) + reserved (1) + codec_config_id (1) + 
-    // num_substreams (1) + substream_ids (num_channels) + num_parameters (1) + 
-    // num_layers (1) + reserved (1) + loudspeaker_layout (1) + flags (4) + counts (2) = 15 + num_channels
-    size_t audio_element_size = 1 + 1 + 1 + 1 + 1 + ctx->audio_config.num_channels + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
+    // Calculate payload size based on element type
+    size_t audio_element_size;
+    bool is_scene_based = ctx->element_config.is_scene_based;
+    
+    if (is_scene_based) {
+        // Scene-based (ambisonics) element size calculation
+        // audio_element_id (1) + audio_element_type (1) + reserved (1) + codec_config_id (1) + 
+        // num_substreams (1) + substream_ids (num_channels) + num_parameters (1) +
+        // ambisonics_config: ambisonics_mode (1) + output_channel_count (1) + substream_count (1) +
+        // coupled_substream_count (1) + demixing_matrix (if projection mode, skip for now)
+        audio_element_size = 1 + 1 + 1 + 1 + 1 + ctx->audio_config.num_channels + 1 + 1 + 1 + 1 + 1;
+    } else {
+        // Channel-based element size calculation  
+        // audio_element_id (1) + audio_element_type (1) + reserved (1) + codec_config_id (1) + 
+        // num_substreams (1) + substream_ids (num_channels) + num_parameters (1) + 
+        // scalable_channel_layout_config: num_layers (1) + reserved (1) + 
+        // channel_audio_layer_config: loudspeaker_layout (1) + output_gain_is_present (1) + 
+        // recon_gain_is_present (1) + reserved (1) + substream_count (1) + coupled_substream_count (1)
+        audio_element_size = 1 + 1 + 1 + 1 + 1 + ctx->audio_config.num_channels + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
+    }
     write_uleb128(internal_ctx->output_file, audio_element_size);
     
     // Audio element payload
-    write_uleb128(internal_ctx->output_file, 0);     // audio_element_id = 0
-    fputc(0x00, internal_ctx->output_file);          // audio_element_type = CHANNEL_BASED
+    write_uleb128(internal_ctx->output_file, ctx->element_config.audio_element_id);  // audio_element_id
+    
+    if (is_scene_based) {
+        fputc(0x01, internal_ctx->output_file);      // audio_element_type = SCENE_BASED
+    } else {
+        fputc(0x00, internal_ctx->output_file);      // audio_element_type = CHANNEL_BASED
+    }
+    
     fputc(0x00, internal_ctx->output_file);          // reserved
     write_uleb128(internal_ctx->output_file, 0);     // codec_config_id = 0
     write_uleb128(internal_ctx->output_file, ctx->audio_config.num_channels);  // num_substreams
@@ -171,24 +192,43 @@ int iamf_eclipsa_write_header(IAMFEclipsaContext* ctx, const char* output_path)
     
     write_uleb128(internal_ctx->output_file, 0);     // num_parameters = 0
     
-    // Scalable channel layout config
-    fputc(0x01, internal_ctx->output_file);          // num_layers = 1
-    fputc(0x00, internal_ctx->output_file);          // reserved
-    
-    // Channel audio layer config
-    if (ctx->audio_config.num_channels == 2) {
-        fputc(0x01, internal_ctx->output_file);      // loudspeaker_layout = STEREO
-    } else if (ctx->audio_config.num_channels == 6) {
-        fputc(0x03, internal_ctx->output_file);      // loudspeaker_layout = 5.1
+    if (is_scene_based) {
+        // Ambisonics config for scene-based elements
+        fputc(ctx->element_config.ambisonics_mode, internal_ctx->output_file);  // ambisonics_mode (0=mono, 1=projection)
+        write_uleb128(internal_ctx->output_file, ctx->audio_config.num_channels);  // output_channel_count  
+        fputc(ctx->audio_config.num_channels, internal_ctx->output_file);  // substream_count
+        fputc(0x00, internal_ctx->output_file);      // coupled_substream_count = 0
+        
+        std::cout << "Scene-based audio element configured for " << ctx->audio_config.num_channels << "-channel ambisonics" << std::endl;
     } else {
-        fputc(0xFF, internal_ctx->output_file);      // loudspeaker_layout = RESERVED (for custom layouts)
+        // Scalable channel layout config for channel-based elements
+        fputc(0x01, internal_ctx->output_file);      // num_layers = 1
+        fputc(0x00, internal_ctx->output_file);      // reserved
+        
+        // Channel audio layer config - set appropriate loudspeaker layout
+        uint8_t loudspeaker_layout = 0xFF;  // Default: RESERVED for custom layouts
+        
+        if (ctx->audio_config.num_channels == 2) {
+            loudspeaker_layout = 0x01;  // STEREO
+        } else if (ctx->audio_config.num_channels == 6) {
+            loudspeaker_layout = 0x03;  // 5.1
+        } else if (ctx->audio_config.num_channels == 4) {
+            loudspeaker_layout = 0xFF;  // RESERVED for M1Spatial-4
+        } else if (ctx->audio_config.num_channels == 8) {
+            loudspeaker_layout = 0xFF;  // RESERVED for M1Spatial-8  
+        } else if (ctx->audio_config.num_channels == 14) {
+            loudspeaker_layout = 0xFF;  // RESERVED for M1Spatial-14
+        }
+        
+        fputc(loudspeaker_layout, internal_ctx->output_file);  // loudspeaker_layout
+        fputc(0x00, internal_ctx->output_file);      // output_gain_is_present_flag = 0
+        fputc(0x00, internal_ctx->output_file);      // recon_gain_is_present_flag = 0
+        fputc(0x00, internal_ctx->output_file);      // reserved
+        fputc(ctx->audio_config.num_channels, internal_ctx->output_file);  // substream_count
+        fputc(0x00, internal_ctx->output_file);      // coupled_substream_count = 0
+        
+        std::cout << "Channel-based audio element configured for " << ctx->audio_config.num_channels << "-channel layout" << std::endl;
     }
-    
-    fputc(0x00, internal_ctx->output_file);          // output_gain_is_present_flag = 0
-    fputc(0x00, internal_ctx->output_file);          // recon_gain_is_present_flag = 0
-    fputc(0x00, internal_ctx->output_file);          // reserved
-    fputc(ctx->audio_config.num_channels, internal_ctx->output_file);  // substream_count
-    fputc(0x00, internal_ctx->output_file);          // coupled_substream_count = 0
     
     // 4. Mix Presentation OBU (type 2) - Simplified
     obu_header = (2 << 3) | 0x02;  // type=2, has_size_flag=1
@@ -217,7 +257,7 @@ int iamf_eclipsa_write_header(IAMFEclipsaContext* ctx, const char* output_path)
     
     // Sub-mix (simplified - no parameters)
     write_uleb128(internal_ctx->output_file, 1);     // num_audio_elements = 1
-    write_uleb128(internal_ctx->output_file, 0);     // audio_element_id = 0
+    write_uleb128(internal_ctx->output_file, ctx->element_config.audio_element_id);  // audio_element_id
     write_uleb128(internal_ctx->output_file, 0);     // No annotations
     
     // Rendering config
@@ -232,14 +272,34 @@ int iamf_eclipsa_write_header(IAMFEclipsaContext* ctx, const char* output_path)
     // Layout configurations
     write_uleb128(internal_ctx->output_file, 1);     // num_layouts = 1
     
-    // Layout
-    fputc(0x02, internal_ctx->output_file);          // layout_type = LOUDSPEAKERS_SS_CONVENTION
-    if (ctx->audio_config.num_channels == 2) {
-        write_uleb128(internal_ctx->output_file, 0x020200);  // sound_system = A_0_2_0 (stereo)
+    // Layout - choose appropriate layout type and sound system
+    if (is_scene_based) {
+        // For ambisonics, use binaural layout type
+        fputc(0x03, internal_ctx->output_file);      // layout_type = BINAURAL
+        fputc(0x00, internal_ctx->output_file);      // reserved (6 bits for binaural)
+        fputc(0x00, internal_ctx->output_file);      // reserved  
     } else {
-        write_uleb128(internal_ctx->output_file, 0x050300);  // sound_system = A_0_5_1 (5.1)
+        // For channel-based, use loudspeaker convention
+        fputc(0x02, internal_ctx->output_file);      // layout_type = LOUDSPEAKERS_SS_CONVENTION
+        
+        // Choose sound system based on channel count
+        uint32_t sound_system = 0x020200;  // Default: A_0_2_0 (stereo)
+        
+        if (ctx->audio_config.num_channels == 2) {
+            sound_system = 0x020200;  // A_0_2_0 (stereo)
+        } else if (ctx->audio_config.num_channels == 6) {
+            sound_system = 0x050300;  // A_0_5_1 (5.1)  
+        } else if (ctx->audio_config.num_channels == 4) {
+            sound_system = 0x020200;  // Default to stereo for M1Spatial-4 
+        } else if (ctx->audio_config.num_channels == 8) {
+            sound_system = 0x050300;  // Default to 5.1 for M1Spatial-8
+        } else if (ctx->audio_config.num_channels == 14) {
+            sound_system = 0x050300;  // Default to 5.1 for M1Spatial-14 
+        }
+        
+        write_uleb128(internal_ctx->output_file, sound_system);
+        fputc(0x00, internal_ctx->output_file);      // reserved
     }
-    fputc(0x00, internal_ctx->output_file);          // reserved
     
     // Loudness info
     write_uleb128(internal_ctx->output_file, 0);     // No info_type_bit_masks
@@ -353,13 +413,54 @@ int mach1_to_iamf_element_config(const char* mach1_format,
     
     memset(element_config, 0, sizeof(IAMFAudioElementConfig));
     
-    if (strcmp(mach1_format, "M1Spatial-14") == 0) {
+    // Mach1 Spatial formats (channel-based)
+    if (strcmp(mach1_format, "M1Spatial-4") == 0 || strcmp(mach1_format, "M1Horizon") == 0) {
+        element_config->audio_element_id = 1;
+        element_config->num_layers = 1;
+        element_config->num_channels_per_layer = 4;
+        element_config->is_scene_based = false;
+        element_config->ambisonics_mode = 0;
+    }
+    else if (strcmp(mach1_format, "M1Spatial-8") == 0 || strcmp(mach1_format, "M1Spatial") == 0) {
+        element_config->audio_element_id = 2;
+        element_config->num_layers = 1;
+        element_config->num_channels_per_layer = 8;
+        element_config->is_scene_based = false;
+        element_config->ambisonics_mode = 0;
+    }
+    else if (strcmp(mach1_format, "M1Spatial-14") == 0) {
         element_config->audio_element_id = 3;
         element_config->num_layers = 1;
         element_config->num_channels_per_layer = 14;
         element_config->is_scene_based = false;
         element_config->ambisonics_mode = 0;
     }
+    // 3rd Order Ambisonics formats (scene-based)
+    else if (strcmp(mach1_format, "ACNSN3DO3A") == 0 || strcmp(mach1_format, "ACNSN3DmaxRE3oa") == 0) {
+        element_config->audio_element_id = 10;
+        element_config->num_layers = 1;
+        element_config->num_channels_per_layer = 16; // 3rd order = (3+1)^2 = 16 channels
+        element_config->is_scene_based = true;
+        element_config->ambisonics_mode = 1; // AMBISONICS_PROJECTION
+    }
+    // 2nd Order Ambisonics formats (scene-based)
+    else if (strcmp(mach1_format, "ACNSN3DO2A") == 0 || strcmp(mach1_format, "ACNSN3DmaxRE2oa") == 0) {
+        element_config->audio_element_id = 11;
+        element_config->num_layers = 1;
+        element_config->num_channels_per_layer = 9; // 2nd order = (2+1)^2 = 9 channels
+        element_config->is_scene_based = true;
+        element_config->ambisonics_mode = 1; // AMBISONICS_PROJECTION
+    }
+    // 1st Order Ambisonics formats (scene-based)
+    else if (strcmp(mach1_format, "ACNSN3DmaxRE1oa") == 0 || strcmp(mach1_format, "ACNSN3DYorkBasic1oa") == 0 || 
+             strcmp(mach1_format, "ACNSN3DYorkmaxRE1oa") == 0 || strcmp(mach1_format, "ACNSN3D") == 0) {
+        element_config->audio_element_id = 12;
+        element_config->num_layers = 1;
+        element_config->num_channels_per_layer = 4; // 1st order = (1+1)^2 = 4 channels
+        element_config->is_scene_based = true;
+        element_config->ambisonics_mode = 1; // AMBISONICS_PROJECTION
+    }
+    // Traditional surround formats (channel-based)
     else if (strcmp(mach1_format, "5.1") == 0) {
         element_config->audio_element_id = 5;
         element_config->num_layers = 1;
@@ -368,7 +469,7 @@ int mach1_to_iamf_element_config(const char* mach1_format,
         element_config->ambisonics_mode = 0;
     }
     else {
-        return -2;
+        return -2; // Unsupported format
     }
     
     return 0;
@@ -398,14 +499,31 @@ int get_recommended_iamf_config(const char* output_format,
         return result;
     }
     
-    if (strcmp(output_format, "M1Spatial-14") == 0) {
+    // Set channel count based on format
+    if (strcmp(output_format, "M1Spatial-4") == 0 || strcmp(output_format, "M1Horizon") == 0) {
+        audio_config->num_channels = 4;
+    }
+    else if (strcmp(output_format, "M1Spatial-8") == 0 || strcmp(output_format, "M1Spatial") == 0) {
+        audio_config->num_channels = 8;
+    }
+    else if (strcmp(output_format, "M1Spatial-14") == 0) {
         audio_config->num_channels = 14;
+    }
+    else if (strcmp(output_format, "ACNSN3DO3A") == 0 || strcmp(output_format, "ACNSN3DmaxRE3oa") == 0) {
+        audio_config->num_channels = 16; // 3rd order ambisonics
+    }
+    else if (strcmp(output_format, "ACNSN3DO2A") == 0 || strcmp(output_format, "ACNSN3DmaxRE2oa") == 0) {
+        audio_config->num_channels = 9; // 2nd order ambisonics
+    }
+    else if (strcmp(output_format, "ACNSN3DmaxRE1oa") == 0 || strcmp(output_format, "ACNSN3DYorkBasic1oa") == 0 || 
+             strcmp(output_format, "ACNSN3DYorkmaxRE1oa") == 0 || strcmp(output_format, "ACNSN3D") == 0) {
+        audio_config->num_channels = 4; // 1st order ambisonics
     }
     else if (strcmp(output_format, "5.1") == 0) {
         audio_config->num_channels = 6;
     }
     else {
-        audio_config->num_channels = 2;
+        audio_config->num_channels = 2; // Default stereo fallback
     }
     
     return 0;

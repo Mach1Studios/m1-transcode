@@ -114,7 +114,9 @@ void iamf_eclipsa_cleanup(IAMFEclipsaContext* ctx);
 
 /**
  * Convert Mach1 spatial audio format to IAMF audio element configuration
- * @param mach1_format Input format (e.g., "M1Spatial-4", "M1Spatial-8", "M1Spatial-14", "5.1.4", etc.)
+ * @param mach1_format Input format (e.g., "M1Spatial-4", "M1Spatial-8", "M1Spatial-14", 
+ *                     "ACNSN3D", "ACNSN3DmaxRE1oa", "ACNSN3DO2A", "ACNSN3DmaxRE2oa", 
+ *                     "ACNSN3DO3A", "ACNSN3DmaxRE3oa", "5.1", etc.)
  * @param element_config Output IAMF element configuration
  * @return 0 on success, negative if format not supported
  */
@@ -151,8 +153,12 @@ int get_recommended_iamf_config(const char* output_format,
  * This demonstrates the full integration between m1-transcode and IAMF
  * 
  * @param input_file Input audio file path
- * @param input_format Mach1 input format (e.g., "M1Spatial-4", "M1Spatial-8", "M1Spatial-14", "5.1", etc.)
- * @param output_format Mach1 output format (e.g., "M1Spatial-4", "M1Spatial-8", "M1Spatial-14", "5.1.4", etc.)
+ * @param input_format Mach1 input format (e.g., "M1Spatial-4", "M1Spatial-8", "M1Spatial-14", 
+ *                     "ACNSN3D", "ACNSN3DmaxRE1oa", "ACNSN3DO2A", "ACNSN3DmaxRE2oa", 
+ *                     "ACNSN3DO3A", "ACNSN3DmaxRE3oa", "5.1", etc.)
+ * @param output_format Mach1 output format (e.g., "M1Spatial-4", "M1Spatial-8", "M1Spatial-14", 
+ *                      "ACNSN3D", "ACNSN3DmaxRE1oa", "ACNSN3DO2A", "ACNSN3DmaxRE2oa", 
+ *                      "ACNSN3DO3A", "ACNSN3DmaxRE3oa", "5.1", etc.)
  * @param output_iamf_file Output IAMF file path
  * @return 0 on success, negative on error
  */
