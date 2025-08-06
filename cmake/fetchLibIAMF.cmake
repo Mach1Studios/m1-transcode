@@ -39,8 +39,18 @@ if (NOT libiamf_POPULATED)
     option(LIBIAMF_BUILD_EXAMPLES "Build libiamf examples" OFF)
     
     # Add libiamf as a subdirectory if it has CMakeLists.txt
-    if(EXISTS "${libiamf_SOURCE_DIR}/CMakeLists.txt")
-        add_subdirectory(${libiamf_SOURCE_DIR} ${libiamf_BINARY_DIR})
+    if(EXISTS "${libiamf_SOURCE_DIR}/code/CMakeLists.txt")
+        # Force static library build for better compatibility
+        set(BUILD_SHARED_LIBS_BACKUP ${BUILD_SHARED_LIBS})
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build static library for IAMF" FORCE)
+        
+        # Disable codec dependencies that we don't need for basic validation
+        set(CODEC_CAP OFF CACHE BOOL "Disable codec capability check" FORCE)
+        
+        add_subdirectory(${libiamf_SOURCE_DIR}/code ${libiamf_BINARY_DIR})
+        
+        # Restore original BUILD_SHARED_LIBS setting
+        set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_BACKUP} CACHE BOOL "Restore original setting" FORCE)
     endif()
     
     message(STATUS "libiamf source: ${LIBIAMF_SOURCE_DIR}")
@@ -86,55 +96,25 @@ add_definitions(-DIAMF_ECLIPSA_SUPPORT=1)
 # Include IAMF headers
 include_directories(${IAMF_INCLUDE_DIRS})
 
-# Function to create a simple IAMF library target if needed
-function(create_simple_iamf_target)
-    if(NOT TARGET iamf_simple)
-        # For now, create a minimal IAMF target with just basic functionality
-        # to avoid complex dependency issues while providing API stubs
-        
-        # Create a simple stub library with just header-only functionality
-        set(IAMF_MINIMAL_SOURCES
-            ${LIBIAMF_SOURCE_DIR}/code/src/common/fixedp11_5.c
-        )
-        
-        # Check if minimal source exists
-        if(EXISTS "${LIBIAMF_SOURCE_DIR}/code/src/common/fixedp11_5.c")
-            add_library(iamf_simple STATIC ${IAMF_MINIMAL_SOURCES})
-            target_include_directories(iamf_simple PUBLIC 
-                ${IAMF_INCLUDE_DIRS}
-                ${LIBIAMF_SOURCE_DIR}/code/src/common
-                ${LIBIAMF_SOURCE_DIR}/code/include
-            )
-            
-            # Add compile definitions for minimal build
-            target_compile_definitions(iamf_simple PUBLIC 
-                IAMF_MINIMAL_BUILD=1
-                IAMF_NO_OPUS=1
-                IAMF_NO_AAC=1
-            )
-            
-            # Link with math library if needed
-            if(UNIX AND NOT APPLE)
-                target_link_libraries(iamf_simple m)
-            endif()
-            
-            message(STATUS "Created minimal IAMF target for basic functionality")
-        else()
-            # Create a header-only interface target if sources can't be compiled
-            add_library(iamf_simple INTERFACE)
-            target_include_directories(iamf_simple INTERFACE ${IAMF_INCLUDE_DIRS})
-            target_compile_definitions(iamf_simple INTERFACE 
-                IAMF_HEADER_ONLY=1
-                IAMF_NO_OPUS=1
-                IAMF_NO_AAC=1
-            )
-            message(STATUS "Created header-only IAMF target")
+# Function to create aliases for the IAMF library target
+function(setup_iamf_targets)
+    # If the actual iamf target exists (from libiamf), create an alias
+    if(TARGET iamf)
+        # Create an alias for easier reference
+        if(NOT TARGET iamf_simple)
+            add_library(iamf_simple ALIAS iamf)
         endif()
+        message(STATUS "Using official libiamf target")
+        set(IAMF_LIBRARIES iamf CACHE INTERNAL "IAMF library target")
+    else()
+        message(WARNING "libiamf target not found - IAMF support may be limited")
     endif()
 endfunction()
 
-# Call the function to create the target
-create_simple_iamf_target()
+# Call the function to setup targets (only after add_subdirectory)
+if(EXISTS "${libiamf_SOURCE_DIR}/code/CMakeLists.txt")
+    setup_iamf_targets()
+endif()
 
 # Print status information
 message(STATUS "IAMF_INCLUDE_DIRS: ${IAMF_INCLUDE_DIRS}")

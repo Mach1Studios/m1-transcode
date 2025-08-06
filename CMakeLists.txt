@@ -2,7 +2,7 @@
 # Setup
 #----------------
 
-cmake_minimum_required (VERSION 3.1..3.18)
+cmake_minimum_required (VERSION 3.5)
 project(m1-transcode)
 set(CMAKE_CXX_STANDARD 11)
 
@@ -105,19 +105,36 @@ endif()
 # create the executable
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 
-# Add IAMF validation tool
+# Add IAMF validation tool with IAMF library support
+add_executable(iamf_validator iamf_validator.cpp)
+target_include_directories(iamf_validator PRIVATE ${PROJECT_INCLUDE_DIRS})
+target_compile_definitions(iamf_validator PRIVATE ${PROJECT_COMPILE_DEFINITIONS})
+
+# Link IAMF libraries to the validator
 if(ENABLE_IAMF_SUPPORT AND IAMF_FOUND)
-    # Temporarily disable validator due to linking issues
-    # add_executable(iamf_validator iamf_validator.cpp)
-    # target_include_directories(iamf_validator PRIVATE ${PROJECT_INCLUDE_DIRS})
-    # target_compile_definitions(iamf_validator PRIVATE ${PROJECT_COMPILE_DEFINITIONS})
-    # target_link_libraries(iamf_validator PRIVATE iamf_simple)
-    # if(TARGET iamf_simple)
-    #     target_link_libraries(iamf_validator PRIVATE iamf_simple)
-    # elseif(IAMF_LIBRARIES)
-    #     target_link_libraries(iamf_official_validator PRIVATE ${IAMF_LIBRARIES})
-    # endif()
+    # Try linking to the actual iamf target first
+    if(TARGET iamf)
+        target_link_libraries(iamf_validator PRIVATE iamf)
+        message(STATUS "Linking iamf_validator with iamf target")
+    elseif(TARGET iamf_simple)
+        target_link_libraries(iamf_validator PRIVATE iamf_simple)
+        message(STATUS "Linking iamf_validator with iamf_simple target")
+    elseif(IAMF_LIBRARIES)
+        target_link_libraries(iamf_validator PRIVATE ${IAMF_LIBRARIES})
+        message(STATUS "Linking iamf_validator with IAMF_LIBRARIES: ${IAMF_LIBRARIES}")
+    else()
+        message(WARNING "No IAMF library target found")
+    endif()
+    
+    # Add IAMF include directories
+    if(IAMF_INCLUDE_DIRS)
+        target_include_directories(iamf_validator PRIVATE ${IAMF_INCLUDE_DIRS})
+    endif()
+else()
+    message(WARNING "IAMF support not enabled or not found - iamf_validator may not work correctly")
 endif()
+
+message(STATUS "Added iamf_validator with IAMF library dependencies")
 
 # Add M1-SDK sources directly to target (following example pattern)
 if(DEFINED MACH1SPATIAL_SOURCES)
