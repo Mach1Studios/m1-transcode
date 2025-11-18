@@ -89,10 +89,6 @@ set(SOURCES
     src/ADMParse.cpp
 )
 
-    set(SOURCES ${SOURCES}
-    )
-endif()
-
 # create the executable
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 

@@ -18,7 +18,7 @@ include(FetchContent)
 FetchContent_Declare(
   m1-sdk
   GIT_REPOSITORY https://github.com/Mach1Studios/m1-sdk.git
-  GIT_TAG        master  # Use latest master branch, or specify a specific tag/commit
+  GIT_TAG        main  # Use latest main branch, or specify a specific tag/commit
   GIT_SHALLOW    TRUE  # For faster cloning
 )
 
