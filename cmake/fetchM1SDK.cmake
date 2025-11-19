@@ -18,8 +18,9 @@ include(FetchContent)
 FetchContent_Declare(
   m1-sdk
   GIT_REPOSITORY https://github.com/Mach1Studios/m1-sdk.git
-  GIT_TAG        main  # Use latest main branch, or specify a specific tag/commit
+  GIT_TAG        develop  # Use develop branch (main doesn't exist in this repo)
   GIT_SHALLOW    TRUE  # For faster cloning
+  GIT_SUBMODULES "libmach1spatial/deps/yaml" "libmach1spatial/deps/pugixml"  # Only fetch needed submodules
 )
 
 FetchContent_GetProperties(m1-sdk)
