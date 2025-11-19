@@ -105,10 +105,7 @@ void printHelp() {
 
 void printFormats() {
     Mach1Transcode<float> formatLister;
-    formatLister.setInputFormat(formatLister.getFormatFromString("1.0"));
-    formatLister.setOutputFormat(formatLister.getFormatFromString("M1Spatial-8"));
-    formatLister.processConversionPath();
-    std::vector<std::vector<float>> matrix = formatLister.getMatrixConversion();
+    // Don't call processConversionPath() - just get the format names directly
     std::vector<std::string> formats = formatLister.getAllFormatNames();
     
     std::cout << "  Format Descriptions:" << std::endl;
